@@ -114,4 +114,61 @@ public class Olivanie_Hardware
         return ((double) rightDriveF.getCurrentPosition()
                 + (double) rightDriveB.getCurrentPosition()) / 2;
     }
+
+
+    void driveSetRunToPosition()
+    {
+        if (leftDriveF.getMode()      != DcMotor.RunMode.RUN_TO_POSITION ||
+                leftDriveB.getMode() != DcMotor.RunMode.RUN_TO_POSITION ||
+                rightDriveF.getMode()   != DcMotor.RunMode.RUN_TO_POSITION ||
+                rightDriveB.getMode()  != DcMotor.RunMode.RUN_TO_POSITION) {
+            driveSetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            driveSetMode(DcMotor.RunMode.RUN_TO_POSITION);
+            // When the encoder is reset, also reset the target position, so it doesn't add an old
+            // target position when using driveAddTargetPosition().
+            driveSetTargetPosition(0, 0, 0, 0);
+        }
+    }
+
+    /**
+     * driveSetMode sets all of the drive train motors to the specified mode.
+     * @param runmode RunMode to set motors to
+     */
+    void driveSetMode(DcMotor.RunMode runmode)
+    {
+        leftDriveF.setMode(runmode);
+        rightDriveF.setMode(runmode);
+        leftDriveB.setMode(runmode);
+        rightDriveB.setMode(runmode);
+    }
+
+    /**
+     * driveSetMode sets all of the drive train motors to the specified positions.
+     * @param flPosition Position to set front left motor to run to
+     * @param frPosition Position to set front right motor to run to
+     * @param blPosition Position to set back left motor to run to
+     * @param brPosition Position to set back right motor to run to
+     */
+    void driveSetTargetPosition(int flPosition, int frPosition, int blPosition, int brPosition)
+    {
+        leftDriveF.setTargetPosition(flPosition);
+        rightDriveF.setTargetPosition(frPosition);
+        leftDriveB.setTargetPosition(blPosition);
+        rightDriveB.setTargetPosition(brPosition);
+    }
+
+    boolean driveAllAreBusy()
+    {
+        return leftDriveF.isBusy() && rightDriveF.isBusy() && leftDriveB.isBusy()
+                && rightDriveB.isBusy();
+    }
+
+
+    void driveAddTargetPosition(int flPosition, int frPosition, int blPosition, int brPosition)
+    {
+        leftDriveF.setTargetPosition(leftDriveF.getTargetPosition()+flPosition);
+        rightDriveF.setTargetPosition(rightDriveF.getTargetPosition()+frPosition);
+        leftDriveB.setTargetPosition(leftDriveB.getTargetPosition()+blPosition);
+        rightDriveB.setTargetPosition(rightDriveB.getTargetPosition()+brPosition);
+    }
 }

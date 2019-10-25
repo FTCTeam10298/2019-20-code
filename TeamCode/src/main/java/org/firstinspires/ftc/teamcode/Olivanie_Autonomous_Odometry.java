@@ -96,6 +96,7 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
     private HalDashboard dashboard;
     Olivanie_Hardware robot = new Olivanie_Hardware();
     Robosition position = new Robosition();
+    RoboPoint roboPoint = new RoboPoint();
 
     static final double PROPORTIONAL_TERM = 1;
     static final double INTEGRAL_TERM = 0;
@@ -138,7 +139,7 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
 
         sleep(delay);
 
-        driveToPoint(1, 12, 16, 45);
+        driveToPoint(1, new WayPoint(12, 24, 0, 0));
 
     }
 
@@ -193,25 +194,25 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
             desiredDistance *= -1;
         }
 
-        double desiredX = position.getX() + (desiredDistance
-                * Math.sin(Math.toRadians(position.getAngle())));
-        double desiredY = position.getY() + (desiredDistance
-                * Math.cos(Math.toRadians(position.getAngle())));
+        double desiredX = roboPoint.getX() + (desiredDistance
+                * Math.sin(Math.toRadians(roboPoint.getAngle())));
+        double desiredY = roboPoint.getY() + (desiredDistance
+                * Math.cos(Math.toRadians(roboPoint.getAngle())));
         double counter = 0;
         double previousTime = getRuntime();
-        double previousError = position.getDistanceAway(desiredX, desiredY);
+        double previousError = roboPoint.getDistanceAway(desiredX, desiredY);
         double I = 0;
 
+        WayPoint wayPoint = new WayPoint(desiredX, desiredY, roboPoint.getAngle(), 0);
 
-
-        while (!position.isPointReached(desiredX, desiredY)) {
+        while (!roboPoint.isPointReached(wayPoint)) {
 
             double leftEncoder = ((double) robot.leftDriveF.getCurrentPosition()
                     + (double) robot.leftDriveB.getCurrentPosition()) / 2;
             double rightEncoder = ((double) robot.rightDriveF.getCurrentPosition()
                     + (double) robot.rightDriveB.getCurrentPosition()) / 2;
             double currentTime = getRuntime();
-            double currentError = position.getDistanceAway(desiredX, desiredY);
+            double currentError = roboPoint.getDistanceAway(desiredX, desiredY);
 
             I += currentError * (currentTime - previousTime);
 
@@ -237,7 +238,7 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
 
             // Update values
             counter += 0.01;
-            position.updatePosition((((double)robot.leftDriveF.getCurrentPosition()
+            roboPoint.updatePosition((((double)robot.leftDriveF.getCurrentPosition()
                     + (double)robot.leftDriveB.getCurrentPosition())/2)
                     - leftEncoder, (((double)robot.rightDriveF.getCurrentPosition()
                     + (double)robot.rightDriveB.getCurrentPosition())/2)
@@ -251,24 +252,26 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
 
         double speed = Math.abs(power);
         double output;
-        double desiredAngle = degrees + position.getAngle();
+        double desiredAngle = degrees + roboPoint.getAngle();
 
         if (desiredAngle > 180)
             desiredAngle -= 360;
         else if (desiredAngle < -180)
             desiredAngle += 360;
 
+        WayPoint wayPoint = new WayPoint(roboPoint.getX(), roboPoint.getY(), desiredAngle,0);
+
         double counter = 0;
         double previousTime = getRuntime();
-        double previousError = position.getAngleAway(desiredAngle);
+        double previousError = roboPoint.getAngleAway(wayPoint);
         double I = 0;
-        boolean right = position.getAngleAway(desiredAngle) > 0;
+        boolean right = roboPoint.getAngleAway(wayPoint) > 0;
 
-        while (!position.isAngleReached(desiredAngle)) {
+        while (!roboPoint.isAngleReached(wayPoint)) {
             double leftEncoder = robot.getLeftWheelEncoder();
             double rightEncoder = robot.getRightWheelEncoder();
             double currentTime = getRuntime();
-            double currentError = position.getAngleAway(desiredAngle);
+            double currentError = roboPoint.getAngleAway(wayPoint);
 
             I += currentError * (currentTime - previousTime);
 
@@ -305,14 +308,14 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
             }
 
             counter += 0.01;
-            position.updatePosition(robot.getLeftWheelEncoder() - leftEncoder,
+            roboPoint.updatePosition(robot.getLeftWheelEncoder() - leftEncoder,
                     robot.getRightWheelEncoder() - rightEncoder);
             previousError = currentError;
             previousTime = currentTime;
         }
     }
 
-    void driveToPoint (double power, double x, double y, double angle) {
+    void driveToPoint (double power, Point point) {
 
         double speed = Math.abs(power);
         double drive;
@@ -321,26 +324,28 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
         double turn;
         double counter = 0;
         double previousTime = getRuntime();
-        double previousError = position.getDistanceAway(x, y);
-        double previousHeadingError = position.getHeadingError(x, y);
+        double previousError = roboPoint.getDistanceAway(point);
+        double previousHeadingError = roboPoint.getHeadingError(point);
         double I = 0;
 
-        while (!position.isPointReached(x, y)) {
+        while (!roboPoint.isPointReached(point)) {
 
             double currentTime = getRuntime();
-            double currentError = position.getDistanceAway(x, y);
-            double currentHeadingError = position.getHeadingError(x, y);
+            double currentError = roboPoint.getDistanceAway(point);
+            double currentHeadingError = roboPoint.getHeadingError(point);
             double leftEncoder = robot.getLeftWheelEncoder();
             double rightEncoder = robot.getRightWheelEncoder();
 
+            WayPoint wayPoint = new WayPoint(currentHeadingError);
+
             int driveDirection;
-            if (Math.abs(position.getAngleAway(currentHeadingError)) > 90)
+            if (Math.abs(roboPoint.getAngleAway(wayPoint)) > 90)
                 driveDirection = -1;
             else
                 driveDirection = 1;
 
             int turnDirection;
-            if (position.getAngleAway(currentHeadingError) > 0)
+            if (roboPoint.getAngleAway(wayPoint) > 0)
                 turnDirection = 1;
             else
                 turnDirection = -1;
@@ -375,13 +380,88 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
 
             // Update values
             counter += 0.01;
-            position.updatePosition(robot.getLeftWheelEncoder() - leftEncoder,
+            roboPoint.updatePosition(robot.getLeftWheelEncoder() - leftEncoder,
                     robot.getRightWheelEncoder() - rightEncoder);
             previousError = currentError;
             previousTime = currentTime;
         }
-        PIDTurn(power, angle - position.getAngle()); //Eventually add to above w/ PID
+        PIDTurn(power, point.getAngle() - roboPoint.getAngle()); //Eventually add to above w/ PID
     }
+
+    /**
+     * DriveRobotPosition drives the robot the set number of inches at the given power level.
+     * @param inches How far to drive, can be negative
+     * @param power Power level to set motors to
+     */
+    void DriveRobotPosition(double power, double inches, boolean smart_accel)
+    {
+        int state = 0; // 0 = NONE, 1 = ACCEL, 2 = DRIVE, 3 = DECEL
+        double position = inches*COUNTS_PER_INCH;
+
+        robot.driveSetRunToPosition();
+
+        if (smart_accel && power > 0.25)
+        {
+            robot.setPowerAll(0.25); // Use abs() to make sure power is positive
+            state = 1; // ACCEL
+        }
+        else {
+            robot.setPowerAll(Math.abs(power)); // Use abs() to make sure power is positive
+        }
+
+        int flOrigTarget = robot.leftDriveF.getTargetPosition();
+        int frOrigTarget = robot.rightDriveF.getTargetPosition();
+        int blOrigTarget = robot.leftDriveB.getTargetPosition();
+        int brOrigTarget = robot.rightDriveB.getTargetPosition();
+        robot.driveAddTargetPosition((int)position, (int)position, (int)position, (int)position);
+
+        for (int i=0; i < 5; i++) {    // Repeat check 5 times, sleeping 10ms between,
+            // as isBusy can be a bit unreliable
+            while (robot.driveAllAreBusy()) {
+                int flDrive = robot.leftDriveF.getCurrentPosition();
+                int frDrive = robot.rightDriveF.getCurrentPosition();
+                int blDrive = robot.leftDriveB.getCurrentPosition();
+                int brDrive = robot.rightDriveB.getCurrentPosition();
+                dashboard.displayPrintf(3, "Front left encoder: %d", flDrive);
+                dashboard.displayPrintf(4, "Front right encoder: %d", frDrive);
+                dashboard.displayPrintf(5, "Back left encoder: %d", blDrive);
+                dashboard.displayPrintf(6, "Back right encoder %d", brDrive);
+
+                // State magic
+                if (state == 1 &&
+                        (Math.abs(flDrive-flOrigTarget) > 2*COUNTS_PER_INCH ||
+                                Math.abs(frDrive-frOrigTarget) > 2*COUNTS_PER_INCH ||
+                                Math.abs(blDrive-blOrigTarget) > 2*COUNTS_PER_INCH ||
+                                Math.abs(brDrive-brOrigTarget) > 2*COUNTS_PER_INCH )) {
+                    // We have gone 2 inches, go to full power
+                    robot.setPowerAll(Math.abs(power)); // Use abs() to make sure power is positive
+                    state = 2;
+                }
+                else if (state == 2 &&
+                        (Math.abs(flDrive-flOrigTarget) > COUNTS_PER_INCH*(Math.abs(inches)-2) ||
+                                Math.abs(frDrive-frOrigTarget) > COUNTS_PER_INCH*(Math.abs(inches)-2) ||
+                                Math.abs(blDrive-blOrigTarget) > COUNTS_PER_INCH*(Math.abs(inches)-2) ||
+                                Math.abs(brDrive-brOrigTarget) > COUNTS_PER_INCH*(Math.abs(inches)-2) )) {
+                    // Cut power by half to DECEL
+                    robot.setPowerAll(Math.abs(power)/2); // Use abs() to make sure power is positive
+                    state = 3; // We are DECELing now
+                }
+                dashboard.displayPrintf(7, "State: %d (0=NONE,1=ACCEL,2=DRIVING,3=DECEL", state);
+            }
+            sleep(10);
+        }
+
+        robot.setPowerAll(0);
+        // Clear used section of dashboard
+        dashboard.displayText(3, "");
+        dashboard.displayText(4, "");
+        dashboard.displayText(5, "");
+        dashboard.displayText(6, "");
+        dashboard.displayText(7, "");
+    }
+
+
+
 
 
     // MENU ----------------------------------------------------------------------------------------

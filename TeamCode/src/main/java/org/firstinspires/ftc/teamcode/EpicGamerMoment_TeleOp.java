@@ -47,7 +47,7 @@ public class EpicGamerMoment_TeleOp extends OpMode {
 
     /* Declare OpMode members. */
     EpicGamerMoment_Hardware robot = new EpicGamerMoment_Hardware(); // use the class created to define Olivanie's hardware
-    Robosition position = new Robosition(0, 0, 0);
+    RoboPoint roboPoint = new RoboPoint();
 
 
     double leftPower = 0;
@@ -140,9 +140,9 @@ public class EpicGamerMoment_TeleOp extends OpMode {
         telemetry.addData("leftPower: ",  "%.2f", leftPower);
         telemetry.addData("rightPower: ",  "%.2f", rightPower);
         telemetry.addData("Tank Drive? ", tankDrive);
-        telemetry.addData("Current Angle: ", "%.2f", position.getAngle());
-        telemetry.addData("X: ", "%.2f", position.getX());
-        telemetry.addData("Y: ", "%.2f", position.getY());
+        telemetry.addData("Current Angle: ", "%.2f", roboPoint.getAngle());
+        telemetry.addData("X: ", "%.2f", roboPoint.getX());
+        telemetry.addData("Y: ", "%.2f", roboPoint.getY());
         telemetry.update();
 
 

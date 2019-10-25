@@ -48,7 +48,7 @@ public class Olivanie_TeleOp extends OpMode {
 
     /* Declare OpMode members. */
     Olivanie_Hardware robot = new Olivanie_Hardware(); // use the class created to define Olivanie's hardware
-    Robosition position = new Robosition(0, 0, 0);
+    RoboPoint roboPoint = new RoboPoint();
 
 
     double leftPower = 0;
@@ -61,6 +61,8 @@ public class Olivanie_TeleOp extends OpMode {
     double minLoopTime = 99999;
     double maxLoopTime = 0;
     double currentLoopTime = 0;
+    double x = roboPoint.getX();
+    double y = roboPoint.getY();
     boolean collectorOn = false;
     boolean switcher1 = false;
     boolean switcher2 = false;
@@ -154,7 +156,7 @@ public class Olivanie_TeleOp extends OpMode {
 //            collectorOn = false;
 //        }
 
-        position.updatePosition((((double)robot.leftDriveF.getCurrentPosition()
+        roboPoint.updatePosition((((double)robot.leftDriveF.getCurrentPosition()
                 + (double)robot.leftDriveB.getCurrentPosition())/2)
                 - leftEncoder, (((double)robot.rightDriveF.getCurrentPosition()
                 + (double)robot.rightDriveB.getCurrentPosition())/2)
@@ -166,15 +168,16 @@ public class Olivanie_TeleOp extends OpMode {
         if (currentLoopTime < minLoopTime)
             minLoopTime = currentLoopTime;
 
+        
         telemetry.addData("leftPower: ",  "%.2f", leftPower);
         telemetry.addData("rightPower: ",  "%.2f", rightPower);
         telemetry.addData("Tank Drive? ", tankDrive);
-        telemetry.addData("Current Angle: ", "%.2f", position.getAngle());
-        telemetry.addData("X: ", "%.2f", position.getX());
-        telemetry.addData("Y: ", "%.2f", position.getY());
         telemetry.addData("Current Loop: ", "%.2f", currentLoopTime);
         telemetry.addData("Min Loop: ", "%.2f", minLoopTime);
         telemetry.addData("Max Loop: ", "%.2f", maxLoopTime);
+        telemetry.addData("Point X: ", roboPoint.getX());
+        telemetry.addData("Point Y: ", roboPoint.getY());
+        telemetry.addData("Point Angle: ", roboPoint.getAngle());
         telemetry.update();
 
     }

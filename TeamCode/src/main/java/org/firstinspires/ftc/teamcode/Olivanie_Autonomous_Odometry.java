@@ -30,6 +30,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.Range;
 
 import ftclib.FtcChoiceMenu;
@@ -38,7 +39,7 @@ import ftclib.FtcValueMenu;
 import hallib.HalDashboard;
 
 @Autonomous(name="Olivanie Autonomous Odometry", group ="Olivanie")
-public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMenu.MenuButtons {
+public class Olivanie_Autonomous_Odometry extends OpMode implements FtcMenu.MenuButtons {
 
     public enum RunMode {
         RUNMODE_AUTO,
@@ -51,8 +52,10 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
     }
 
     public enum StartPosition {
-        LOADING,
-        BUILDING
+        BUILDING1,
+        BUILDING2,
+        LOADING1,
+        LOADING2
     }
 
     public enum Skystones {
@@ -82,15 +85,21 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
         NONE
     }
 
+    public enum Auto_path {
+        PATH1,
+        PATH2
+    }
+
     // Menu option variables
     RunMode runmode = RunMode.RUNMODE_AUTO;
     int delay = 0;
     Alliance alliance = Alliance.RED;
-    StartPosition startposition = StartPosition.LOADING;
+    StartPosition startposition = StartPosition.LOADING2;
     Skystones skystones = Skystones.ONE;
     Stones stones = Stones.ZERO;
     Foundation foundation = Foundation.YES;
     Park park = Park.WALL;
+    Auto_path path = Auto_path.PATH1;
 
     /* Declare OpMode members. */
     private HalDashboard dashboard;
@@ -112,9 +121,9 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
 
     int errors = 0;
 
-
+    // code to run once after driver hits init
     @Override
-    public void runOpMode() {
+    public void init() {
         // Initialize the hardware -----------------------------------------------------------------
         robot.init(hardwareMap);
 
@@ -124,12 +133,50 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
         // Run though the menu ---------------------------------------------------------------------
         doMenus();
 
-
+        if (alliance == Alliance.RED) {
+            if (startposition == StartPosition.BUILDING1) {
+                if (skystones == Skystones.ZERO) {
+                    if (stones == Stones.ZERO) {
+                        if (foundation == Foundation.YES) {
+                            if (park == Park.WALL) {
+                                path = Auto_path.PATH1;
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (alliance == Alliance.BLUE) {
+            if (startposition == StartPosition.BUILDING1) {
+                if (skystones == Skystones.ZERO) {
+                    if (stones == Stones.ZERO) {
+                        if (foundation == Foundation.YES) {
+                            if (park == Park.WALL) {
+                                path = Auto_path.PATH2;
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         dashboard.displayPrintf(0, "Status: Ready to start");
         if (errors > 0)
             dashboard.displayPrintf(2, "!!! %d errors!", errors);
 
+    }
+
+    /*
+     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
+     */
+    @Override
+    public void init_loop() {
+    }
+
+    /*
+     * Code to run ONCE when the driver hits PLAY
+     */
+    @Override
+    public void start() {
 
         /**
          * ----- AUTONOMOUS START-------------------------------------------------------------------
@@ -137,10 +184,24 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
 
         dashboard.displayPrintf(0, "Status: Running");
 
-        sleep(delay);
-
         driveToPoint(1, new WayPoint(12, 24, 0, 0));
+    }
 
+    /*
+     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
+     */
+        @Override
+        public void loop () {
+
+        }
+
+
+
+    /*
+     * Code to run ONCE after the driver hits STOP
+     */
+    @Override
+    public void stop() {
     }
 
     /**
@@ -161,17 +222,15 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
         if (debug == RunMode.RUNMODE_DEBUG)
         {
             dashboard.displayPrintf(1, "Press A to run, B to skip");
-            while (opModeIsActive()) {
                 if (gamepad1.a) {
                     dashboard.displayPrintf(1, "Run");
                     return true;
                 }
                 if (gamepad1.b) {
                     dashboard.displayPrintf(1, "Skip");
-                    sleep(1000);
+                    //sleep
                     return false;
                 }
-            }
         }
         return default_value;
     }
@@ -448,7 +507,7 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
                 }
                 dashboard.displayPrintf(7, "State: %d (0=NONE,1=ACCEL,2=DRIVING,3=DECEL", state);
             }
-            sleep(10);
+            //sleep(10);
         }
 
         robot.setPowerAll(0);
@@ -495,8 +554,10 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
         allianceMenu.addChoice("Red", Alliance.RED, true, startPositionMenu);
         allianceMenu.addChoice("Blue", Alliance.BLUE, false, startPositionMenu);
 
-        startPositionMenu.addChoice("Loading Zone", StartPosition.LOADING, true, skystonesMenu);
-        startPositionMenu.addChoice("Building Zone", StartPosition.BUILDING, false, skystonesMenu);
+        startPositionMenu.addChoice("Loading Zone Far", StartPosition.LOADING1, false, skystonesMenu);
+        startPositionMenu.addChoice("Loading Zone Near", StartPosition.LOADING2, true, skystonesMenu);
+        startPositionMenu.addChoice("Building Zone Far", StartPosition.BUILDING1, false, skystonesMenu);
+        startPositionMenu.addChoice("Building Zone Near", StartPosition.BUILDING2, false, skystonesMenu);
 
         skystonesMenu.addChoice("None", Skystones.ZERO, false, stonesMenu);
         skystonesMenu.addChoice("One", Skystones.ONE, true, stonesMenu);
@@ -521,7 +582,7 @@ public class Olivanie_Autonomous_Odometry extends LinearOpMode implements FtcMen
         parkMenu.addChoice("None", Park.NONE, false);
 
 
-        FtcMenu.walkMenuTree(modeMenu, this);
+        FtcMenu.walkMenuTree(modeMenu);
         runmode = modeMenu.getCurrentChoiceObject();
         delay = (int) delayMenu.getCurrentValue();
         alliance = allianceMenu.getCurrentChoiceObject();

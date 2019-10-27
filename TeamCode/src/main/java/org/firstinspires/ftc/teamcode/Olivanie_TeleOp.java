@@ -93,8 +93,8 @@ public class Olivanie_TeleOp extends OpMode {
 
         if (tankDrive) {
 
-            leftPower = Range.clip(gamepad2.left_stick_y + gamepad1.left_stick_y / 3, -1, 1);
-            rightPower = Range.clip(gamepad2.right_stick_y + gamepad1.right_stick_y / 3, -1, 1);
+            leftPower = Range.clip(gamepad2.left_stick_y + gamepad1.left_stick_y, -1, 1);
+            rightPower = Range.clip(gamepad2.right_stick_y + gamepad1.right_stick_y, -1, 1);
 
             robot.setPowerLeft(leftPower);
             robot.setPowerRight(rightPower);
@@ -104,7 +104,7 @@ public class Olivanie_TeleOp extends OpMode {
             // Run wheels in POV mode (note: The joystick goes negative when pushed forwards, so negate it)
             // In this mode the Left stick moves the robot fwd and back, the Right stick turns left and right.
             // This way it's also easy to just drive straight, or just turn.
-            drive = gamepad1.right_trigger - gamepad1.left_trigger;
+            drive = gamepad1.left_trigger - gamepad1.right_trigger;
             turn  = -gamepad1.left_stick_x;
 
             // Combine drive and turn for blended motion.
@@ -143,18 +143,26 @@ public class Olivanie_TeleOp extends OpMode {
             switcher2 = false;
         }
 
-//        if (gamepad1.right_bumper && !switcher1)
-//            switcher1 = true;
-//        if (switcher1 && !gamepad1.right_bumper) {
-//            collectorOn = true;
-//            switcher1 = false;
-//        }
-//        if (gamepad1.right_bumper && collectorOn)
-//            switcher1 = true;
-//        if (collectorOn && switcher1) {
-//            switcher1 = false;
-//            collectorOn = false;
-//        }
+        if (gamepad1.right_bumper && !switcher1)
+            switcher1 = true;
+        else if (switcher1 && !gamepad1.right_bumper && !collectorOn) {
+            collectorOn = true;
+            switcher1 = false;
+        }
+        else if (switcher1 && !gamepad1.right_bumper && collectorOn) {
+            switcher1 = false;
+            collectorOn = false;
+        }
+
+
+        if (collectorOn) {
+            robot.leftCollector.setPower(1);
+            robot.rightCollector.setPower(1);
+        }
+        else {
+            robot.rightCollector.setPower(0);
+            robot.leftCollector.setPower(0);
+        }
 
         roboPoint.updatePosition((((double)robot.leftDriveF.getCurrentPosition()
                 + (double)robot.leftDriveB.getCurrentPosition())/2)

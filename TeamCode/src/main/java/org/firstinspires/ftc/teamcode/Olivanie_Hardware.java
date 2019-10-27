@@ -17,8 +17,8 @@ public class Olivanie_Hardware
     public DcMotor rightDriveF = null;
     public DcMotor leftDriveB = null;
     public DcMotor rightDriveB = null;
-//    public DcMotor leftCollector = null;
-//    public DcMotor rightCollector = null;
+    public DcMotor leftCollector = null;
+    public DcMotor rightCollector = null;
 
 
     /* Local OpMode members. */
@@ -39,8 +39,8 @@ public class Olivanie_Hardware
         rightDriveF = hwMap.dcMotor.get("right drive f");
         leftDriveB = hwMap.dcMotor.get("left drive b");
         rightDriveB = hwMap.dcMotor.get("right drive b");
-//        leftCollector = hwMap.dcMotor.get("left collector");
-//        rightCollector = hwMap.dcMotor.get("right collector");
+        leftCollector = hwMap.dcMotor.get("left collector");
+        rightCollector = hwMap.dcMotor.get("right collector");
 
         // Set direction for all motors
         leftDriveF.setDirection(DcMotor.Direction.REVERSE);
@@ -48,8 +48,8 @@ public class Olivanie_Hardware
         leftDriveB.setDirection(DcMotor.Direction.REVERSE);
         rightDriveB.setDirection(DcMotor.Direction.FORWARD);
 
-//        leftCollector.setDirection(DcMotor.Direction.FORWARD);
-//        rightCollector.setDirection(DcMotor.Direction.REVERSE);
+        leftCollector.setDirection(DcMotor.Direction.FORWARD);
+        rightCollector.setDirection(DcMotor.Direction.REVERSE);
 
 
         // Set all motors to zero power
@@ -57,8 +57,8 @@ public class Olivanie_Hardware
         rightDriveF.setPower(0);
         leftDriveB.setPower(0);
         rightDriveB.setPower(0);
-//        leftCollector.setPower(0);
-//        rightCollector.setPower(0);
+        leftCollector.setPower(0);
+        rightCollector.setPower(0);
 
 
         // Set all motors to use brake mode
@@ -66,8 +66,8 @@ public class Olivanie_Hardware
         rightDriveF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftDriveB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightDriveB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        leftCollector.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-//        rightCollector.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftCollector.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightCollector.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
 
 
@@ -77,8 +77,8 @@ public class Olivanie_Hardware
         rightDriveF.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftDriveB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightDriveB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        leftCollector.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        rightCollector.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 
 

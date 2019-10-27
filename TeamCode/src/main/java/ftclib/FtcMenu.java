@@ -209,13 +209,13 @@ public abstract class FtcMenu
      * of a state machine. To use the menus in a multitasking environment, you must use the runMenus() method instead.
      *
      * @param rootMenu specifies the root of the menu tree.
-     * @param opmode specifies the linear opmode that calls this.
+     * //@param opmode specifies the linear opmode that calls this. ******UNNECESSARY IN OPMODE******
      */
-    public static void walkMenuTree(FtcMenu rootMenu, LinearOpMode opmode)
+    public static void walkMenuTree(FtcMenu rootMenu)//, LinearOpMode opmode)
     {
         setRootMenu(rootMenu);
         rootMenu.displayMenu();
-        while (!runMenus() && !opmode.isStopRequested())
+        while (!runMenus()) // && !opmode.isStopRequested())
         {
             TrcUtil.sleep(LOOP_INTERVAL);
         }

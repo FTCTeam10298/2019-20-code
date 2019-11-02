@@ -51,6 +51,7 @@ public class Olivanie_TeleOp extends OpMode {
     RoboPoint roboPoint = new RoboPoint();
 
 
+    double speedReducer = 1;
     double leftPower = 0;
     double rightPower = 0;
     double leftEncoder = 0;
@@ -63,10 +64,12 @@ public class Olivanie_TeleOp extends OpMode {
     double currentLoopTime = 0;
     double x = roboPoint.getX();
     double y = roboPoint.getY();
-    boolean collectorOn = false;
+    int collectorOn = 0;
     boolean switcher1 = false;
     boolean switcher2 = false;
-    boolean tankDrive = true;
+    boolean switcher3 = false;
+    boolean switcher4 = false;
+    boolean slowDrive = true;
 
     static final double DPAD_TURN_POWER = .1;
 
@@ -91,77 +94,123 @@ public class Olivanie_TeleOp extends OpMode {
         leftEncoder = robot.getLeftWheelEncoder();
         rightEncoder = robot.getRightWheelEncoder();
 
-        if (tankDrive) {
+        // Run wheels in POV mode (note: The joystick goes negative when pushed forwards, so negate it)
+        // In this mode the Left stick moves the robot fwd and back, the Right stick turns left and right.
+        // This way it's also easy to just drive straight, or just turn.
+        drive = (gamepad1.left_trigger - gamepad1.right_trigger) / speedReducer;
+        turn  = -(gamepad1.right_stick_x) / speedReducer;
 
-            leftPower = Range.clip(gamepad2.left_stick_y + gamepad1.left_stick_y, -1, 1);
-            rightPower = Range.clip(gamepad2.right_stick_y + gamepad1.right_stick_y, -1, 1);
+        // Combine drive and turn for blended motion.
+        leftPower  = drive + turn;
+        rightPower = drive - turn;
 
-            robot.setPowerLeft(leftPower);
-            robot.setPowerRight(rightPower);
-
-        }
-        else {
-            // Run wheels in POV mode (note: The joystick goes negative when pushed forwards, so negate it)
-            // In this mode the Left stick moves the robot fwd and back, the Right stick turns left and right.
-            // This way it's also easy to just drive straight, or just turn.
-            drive = gamepad1.left_trigger - gamepad1.right_trigger;
-            turn  = -gamepad1.left_stick_x;
-
-            // Combine drive and turn for blended motion.
-            leftPower  = drive + turn;
-            rightPower = drive - turn;
-
-            // Normalize the values so neither exceed +/- 1.0
-            max = Math.max(Math.abs(leftPower), Math.abs(rightPower));
-            if (max > 1.0)
-            {
-                leftPower /= max;
-                rightPower /= max;
-            }
-
-            if (gamepad1.dpad_right) {
-                rightPower = DPAD_TURN_POWER;
-                leftPower = -DPAD_TURN_POWER;
-            }
-            else if (gamepad1.dpad_left) {
-                rightPower = -DPAD_TURN_POWER;
-                leftPower = DPAD_TURN_POWER;
-            }
-
-            // Output the safe vales to the motor drives.
-            robot.setPowerLeft(leftPower);
-            robot.setPowerRight(rightPower);
+        // Normalize the values so neither exceed +/- 1.0
+        max = Math.max(Math.abs(leftPower), Math.abs(rightPower));
+        if (max > 1.0)
+        {
+            leftPower /= max;
+            rightPower /= max;
         }
 
+        if (gamepad1.dpad_right) {
+            rightPower = DPAD_TURN_POWER;
+            leftPower = -DPAD_TURN_POWER;
+        }
+        else if (gamepad1.dpad_left) {
+            rightPower = -DPAD_TURN_POWER;
+            leftPower = DPAD_TURN_POWER;
+        }
+
+        // Output the safe vales to the motor drives.
+        robot.setPowerLeft(leftPower);
+        robot.setPowerRight(rightPower);
+
+        // Arm
+        if (gamepad1.y)
+            robot.arm.setPower(.4);
+        else if (gamepad1.a)
+            robot.arm.setPower(-.4);
+        else
+            robot.arm.setPower(0);
+
+        // Switch between tank and Forza 5
         if (gamepad1.left_stick_y == 0 && gamepad1.right_stick_y == 0
                 && gamepad1.left_stick_x == 0 && gamepad1.right_stick_x == 0
                 && gamepad1.start && !switcher2) {
             switcher2 = true;
         }
         if (switcher2 && !gamepad1.start) {
-            tankDrive = !tankDrive;
+            if (speedReducer == 1)
+                speedReducer = 3;
+            else
+                speedReducer = 1;
             switcher2 = false;
+            slowDrive = !slowDrive;
         }
 
-        if (gamepad1.right_bumper && !switcher1)
+        // Collector
+        if (gamepad1.right_bumper || gamepad1.left_bumper && !switcher1) {
             switcher1 = true;
-        else if (switcher1 && !gamepad1.right_bumper && !collectorOn) {
-            collectorOn = true;
+            if (collectorOn == 0) {
+                if (gamepad1.right_bumper)
+                    collectorOn = 3;
+                else if (gamepad1.left_bumper)
+                    collectorOn = 4;
+            }
+        }
+        else if (switcher1 && !gamepad1.right_bumper && collectorOn == 3) {
+            collectorOn = 1;
             switcher1 = false;
         }
-        else if (switcher1 && !gamepad1.right_bumper && collectorOn) {
+        else if (switcher1 && !gamepad1.left_bumper && collectorOn == 4) {
+            collectorOn = 2;
             switcher1 = false;
-            collectorOn = false;
+        }
+        else if (switcher1 && collectorOn < 3 && collectorOn > 0) {
+            switcher1 = false;
+            collectorOn = 0;
         }
 
-
-        if (collectorOn) {
+        if (collectorOn == 1) {
             robot.leftCollector.setPower(1);
             robot.rightCollector.setPower(1);
+        }
+        else if (collectorOn == 2) {
+            robot.leftCollector.setPower(-1);
+            robot.rightCollector.setPower(-1);
         }
         else {
             robot.rightCollector.setPower(0);
             robot.leftCollector.setPower(0);
+        }
+
+        // Claw
+        if (gamepad1.x && !switcher3) {
+            switcher3 = true;
+        }
+        else if (switcher3 && !gamepad1.x) {
+            if (robot.claw.getPosition() > .8) {
+                robot.claw.setPosition(.6);
+            }
+            else {
+                robot.claw.setPosition(1);
+            }
+            switcher3 = false;
+        }
+
+
+        // Foundation
+        if (gamepad1.b && !switcher4) {
+            switcher4 = true;
+        }
+        else if (switcher4 && !gamepad1.b) {
+            if (robot.leftFoundation.getPosition() > 0) {
+                robot.openFoundation();
+            }
+            else {
+                robot.closeFoundation();
+            }
+            switcher4 = false;
         }
 
         roboPoint.updatePosition((((double)robot.leftDriveF.getCurrentPosition()
@@ -179,7 +228,7 @@ public class Olivanie_TeleOp extends OpMode {
         
         telemetry.addData("leftPower: ",  "%.2f", leftPower);
         telemetry.addData("rightPower: ",  "%.2f", rightPower);
-        telemetry.addData("Tank Drive? ", tankDrive);
+        telemetry.addData("Slow Drive? ", slowDrive);
         telemetry.addData("Current Loop: ", "%.2f", currentLoopTime);
         telemetry.addData("Min Loop: ", "%.2f", minLoopTime);
         telemetry.addData("Max Loop: ", "%.2f", maxLoopTime);

@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 /**
  * This is NOT an opmode.
@@ -19,6 +21,10 @@ public class Olivanie_Hardware
     public DcMotor rightDriveB = null;
     public DcMotor leftCollector = null;
     public DcMotor rightCollector = null;
+    public DcMotor arm = null;
+    public Servo claw = null;
+    public Servo leftFoundation = null;
+    public Servo rightFoundation = null;
 
 
     /* Local OpMode members. */
@@ -41,6 +47,12 @@ public class Olivanie_Hardware
         rightDriveB = hwMap.dcMotor.get("right drive b");
         leftCollector = hwMap.dcMotor.get("left collector");
         rightCollector = hwMap.dcMotor.get("right collector");
+        arm = hwMap.dcMotor.get("arm");
+
+        // Define and initialize servos
+        claw = hwMap.servo.get("claw");
+        leftFoundation = hwMap.servo.get("left foundation");
+        rightFoundation = hwMap.servo.get("right foundation");
 
         // Set direction for all motors
         leftDriveF.setDirection(DcMotor.Direction.REVERSE);
@@ -51,6 +63,8 @@ public class Olivanie_Hardware
         leftCollector.setDirection(DcMotor.Direction.FORWARD);
         rightCollector.setDirection(DcMotor.Direction.REVERSE);
 
+        arm.setDirection(DcMotor.Direction.FORWARD);
+
 
         // Set all motors to zero power
         leftDriveF.setPower(0);
@@ -59,7 +73,11 @@ public class Olivanie_Hardware
         rightDriveB.setPower(0);
         leftCollector.setPower(0);
         rightCollector.setPower(0);
+        arm.setPower(0);
 
+        // Set all servos to default positions
+        claw.setPosition(1);
+        openFoundation();
 
         // Set all motors to use brake mode
         leftDriveF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -68,6 +86,7 @@ public class Olivanie_Hardware
         rightDriveB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftCollector.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightCollector.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
 
@@ -79,6 +98,7 @@ public class Olivanie_Hardware
         rightDriveB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
 
@@ -115,6 +135,15 @@ public class Olivanie_Hardware
                 + (double) rightDriveB.getCurrentPosition()) / 2;
     }
 
+    public void closeFoundation () {
+        leftFoundation.setPosition(0);
+        rightFoundation.setPosition(.5);
+    }
+
+    public void openFoundation () {
+        leftFoundation.setPosition(.5);
+        rightFoundation.setPosition(0);
+    }
 
     void driveSetRunToPosition()
     {

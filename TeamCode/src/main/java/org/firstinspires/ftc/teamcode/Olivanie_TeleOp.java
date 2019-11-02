@@ -126,14 +126,14 @@ public class Olivanie_TeleOp extends OpMode {
         robot.setPowerRight(rightPower);
 
         // Arm
-        if (gamepad1.y)
+        if (gamepad1.y || gamepad2.y)
             robot.arm.setPower(.4);
-        else if (gamepad1.a)
+        else if (gamepad1.a || gamepad2.a)
             robot.arm.setPower(-.4);
         else
             robot.arm.setPower(0);
 
-        // Switch between tank and Forza 5
+        // Switch between fine and fast controls
         if (gamepad1.left_stick_y == 0 && gamepad1.right_stick_y == 0
                 && gamepad1.left_stick_x == 0 && gamepad1.right_stick_x == 0
                 && gamepad1.start && !switcher2) {
@@ -149,20 +149,21 @@ public class Olivanie_TeleOp extends OpMode {
         }
 
         // Collector
-        if (gamepad1.right_bumper || gamepad1.left_bumper && !switcher1) {
+        if (gamepad1.right_bumper || gamepad1.left_bumper || gamepad2.right_bumper ||
+                gamepad2.left_bumper && !switcher1) {
             switcher1 = true;
             if (collectorOn == 0) {
-                if (gamepad1.right_bumper)
+                if (gamepad1.right_bumper || gamepad2.right_bumper)
                     collectorOn = 3;
-                else if (gamepad1.left_bumper)
+                else if (gamepad1.left_bumper || gamepad2.left_bumper)
                     collectorOn = 4;
             }
         }
-        else if (switcher1 && !gamepad1.right_bumper && collectorOn == 3) {
+        else if (switcher1 && !gamepad1.right_bumper && !gamepad2.right_bumper&& collectorOn == 3) {
             collectorOn = 1;
             switcher1 = false;
         }
-        else if (switcher1 && !gamepad1.left_bumper && collectorOn == 4) {
+        else if (switcher1 && !gamepad1.left_bumper && !gamepad2.left_bumper && collectorOn == 4) {
             collectorOn = 2;
             switcher1 = false;
         }
@@ -185,10 +186,10 @@ public class Olivanie_TeleOp extends OpMode {
         }
 
         // Claw
-        if (gamepad1.x && !switcher3) {
+        if (gamepad1.x || gamepad2.x && !switcher3) {
             switcher3 = true;
         }
-        else if (switcher3 && !gamepad1.x) {
+        else if (switcher3 && !gamepad1.x && !gamepad2.x) {
             if (robot.claw.getPosition() > .8) {
                 robot.claw.setPosition(.6);
             }
@@ -200,10 +201,10 @@ public class Olivanie_TeleOp extends OpMode {
 
 
         // Foundation
-        if (gamepad1.b && !switcher4) {
+        if (gamepad1.b || gamepad2.b && !switcher4) {
             switcher4 = true;
         }
-        else if (switcher4 && !gamepad1.b) {
+        else if (switcher4 && !gamepad1.b && !gamepad2.b) {
             if (robot.leftFoundation.getPosition() > 0) {
                 robot.openFoundation();
             }

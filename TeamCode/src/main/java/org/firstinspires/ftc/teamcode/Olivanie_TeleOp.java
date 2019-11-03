@@ -186,12 +186,12 @@ public class Olivanie_TeleOp extends OpMode {
         }
 
         // Claw
-        if (gamepad1.x || gamepad2.x && !switcher3) {
+        if ((gamepad1.x || gamepad2.x) && !switcher3) {
             switcher3 = true;
         }
         else if (switcher3 && !gamepad1.x && !gamepad2.x) {
             if (robot.claw.getPosition() > .8) {
-                robot.claw.setPosition(.6);
+                robot.claw.setPosition(.3);
             }
             else {
                 robot.claw.setPosition(1);

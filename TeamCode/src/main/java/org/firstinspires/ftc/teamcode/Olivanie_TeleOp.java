@@ -192,20 +192,22 @@ public class Olivanie_TeleOp extends OpMode {
         else if (switcher3 && !gamepad1.x && !gamepad2.x) {
             if (robot.claw.getPosition() > .8) {
                 robot.claw.setPosition(.3);
+                robot.gate.setPosition(robot.OPEN);
             }
             else {
                 robot.claw.setPosition(1);
+                robot.gate.setPosition(robot.CLOSED);
             }
             switcher3 = false;
         }
 
 
         // Foundation
-        if (gamepad1.b || gamepad2.b && !switcher4) {
+        if ((gamepad1.b || gamepad2.b) && !switcher4) {
             switcher4 = true;
         }
         else if (switcher4 && !gamepad1.b && !gamepad2.b) {
-            if (robot.leftFoundation.getPosition() > 0) {
+            if (robot.leftFoundation.getPosition() < 0.3f) {
                 robot.openFoundation();
             }
             else {
@@ -218,7 +220,8 @@ public class Olivanie_TeleOp extends OpMode {
                 + (double)robot.leftDriveB.getCurrentPosition())/2)
                 - leftEncoder, (((double)robot.rightDriveF.getCurrentPosition()
                 + (double)robot.rightDriveB.getCurrentPosition())/2)
-                - rightEncoder);
+                - rightEncoder, robot.getLeftWheelEncoder(),
+                robot.getRightWheelEncoder());
 
         currentLoopTime = getRuntime() - currentLoopTime;
         if (currentLoopTime > maxLoopTime)
@@ -233,8 +236,8 @@ public class Olivanie_TeleOp extends OpMode {
         telemetry.addData("Current Loop: ", "%.2f", currentLoopTime);
         telemetry.addData("Min Loop: ", "%.2f", minLoopTime);
         telemetry.addData("Max Loop: ", "%.2f", maxLoopTime);
-        telemetry.addData("Point X: ", roboPoint.getX());
-        telemetry.addData("Point Y: ", roboPoint.getY());
+        telemetry.addData("Point X: ", "%f", robot.getLeftWheelEncoder());
+        telemetry.addData("Point Y: ", "%f", robot.getRightWheelEncoder());
         telemetry.addData("Point Angle: ", roboPoint.getAngle());
         telemetry.update();
 

@@ -4,7 +4,7 @@ public class RoboPoint extends Point {
 
     private static final double MINIMUM_DISTANCE_AWAY = 1; // Minimum distance away from point to move
     private static final double MINIMUM_ANGLE_AWAY = 1;
-    private static final double DISTANCE_BETWEEN_WHEELS = 15.625;
+    private static final double DISTANCE_BETWEEN_WHEELS = 15;
     private static final double COUNTS_PER_MOTOR_REV  = 28.0;      // Rev HD Hex v2.1 Motor encoder
     private static final double GEARBOX_RATIO         = 20;      // 40 for 40:1, 20 for 20:1
     private static final double DRIVE_GEAR_REDUCTION  = 1; // This is > 1.0 if geared for torque
@@ -96,7 +96,8 @@ public class RoboPoint extends Point {
     }
 
 
-    public void updatePosition (double changeInLeftEncoder, double changeInRightEncoder) {
+    public void updatePosition (double changeInLeftEncoder, double changeInRightEncoder,
+                                double leftEncoder, double rightEncoder) {
         double changeInLeftInches = changeInLeftEncoder / COUNTS_PER_INCH;
         double changeInRightInches = changeInRightEncoder / COUNTS_PER_INCH;
         double changeInAngle = -(changeInLeftInches - changeInRightInches) / DISTANCE_BETWEEN_WHEELS;
@@ -110,7 +111,8 @@ public class RoboPoint extends Point {
                 - changeInY * Math.cos(Math.toRadians(getAngle()));
         setX(getX() + x);
         setY(getY() + y);
-        setAngle(getAngle() + Math.toDegrees(changeInAngle));
+        setAngle(-(leftEncoder - rightEncoder) / DISTANCE_BETWEEN_WHEELS);
+        //setAngle(getAngle() + Math.toDegrees(changeInAngle));
         if (getAngle() > 180)
             setAngle(getAngle() - 360);
         if (getAngle() < -179)

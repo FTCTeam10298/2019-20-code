@@ -25,7 +25,10 @@ public class Olivanie_Hardware
     public Servo claw = null;
     public Servo leftFoundation = null;
     public Servo rightFoundation = null;
+    public Servo gate = null;
 
+    public static final double CLOSED = 0;
+    public static final double OPEN = 0.5;
 
     /* Local OpMode members. */
     HardwareMap hwMap              = null;
@@ -53,6 +56,7 @@ public class Olivanie_Hardware
         claw = hwMap.servo.get("claw");
         leftFoundation = hwMap.servo.get("left foundation");
         rightFoundation = hwMap.servo.get("right foundation");
+        gate = hwMap.servo.get("gate");
 
         // Set direction for all motors
         leftDriveF.setDirection(DcMotor.Direction.REVERSE);
@@ -78,6 +82,7 @@ public class Olivanie_Hardware
         // Set all servos to default positions
         claw.setPosition(1);
         openFoundation();
+        gate.setPosition(CLOSED);
 
         // Set all motors to use brake mode
         leftDriveF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -90,6 +95,11 @@ public class Olivanie_Hardware
 
 
 
+
+        leftDriveF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightDriveF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftDriveB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightDriveB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         // Set almost all motors to run with encoders
         leftDriveF.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -136,12 +146,12 @@ public class Olivanie_Hardware
     }
 
     public void closeFoundation () {
-        leftFoundation.setPosition(0);
-        rightFoundation.setPosition(.5);
+        leftFoundation.setPosition(.2);
+        rightFoundation.setPosition(1);
     }
 
     public void openFoundation () {
-        leftFoundation.setPosition(.5);
+        leftFoundation.setPosition(1);
         rightFoundation.setPosition(0);
     }
 

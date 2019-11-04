@@ -301,7 +301,8 @@ public class Olivanie_Autonomous_Odometry extends OpMode implements FtcMenu.Menu
                     + (double)robot.leftDriveB.getCurrentPosition())/2)
                     - leftEncoder, (((double)robot.rightDriveF.getCurrentPosition()
                     + (double)robot.rightDriveB.getCurrentPosition())/2)
-                    - rightEncoder);
+                    - rightEncoder, robot.getLeftWheelEncoder(),
+                    robot.getRightWheelEncoder());
             previousError = currentError;
             previousTime = currentTime;
         }
@@ -368,7 +369,8 @@ public class Olivanie_Autonomous_Odometry extends OpMode implements FtcMenu.Menu
 
             counter += 0.01;
             roboPoint.updatePosition(robot.getLeftWheelEncoder() - leftEncoder,
-                    robot.getRightWheelEncoder() - rightEncoder);
+                    robot.getRightWheelEncoder() - rightEncoder, robot.getLeftWheelEncoder(),
+                    robot.getRightWheelEncoder());
             previousError = currentError;
             previousTime = currentTime;
         }
@@ -440,7 +442,8 @@ public class Olivanie_Autonomous_Odometry extends OpMode implements FtcMenu.Menu
             // Update values
             counter += 0.01;
             roboPoint.updatePosition(robot.getLeftWheelEncoder() - leftEncoder,
-                    robot.getRightWheelEncoder() - rightEncoder);
+                    robot.getRightWheelEncoder() - rightEncoder, robot.getLeftWheelEncoder(),
+                    robot.getRightWheelEncoder());
             previousError = currentError;
             previousTime = currentTime;
         }

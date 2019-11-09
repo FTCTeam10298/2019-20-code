@@ -87,7 +87,9 @@ public class Olivanie_Autonomous_Odometry extends OpMode implements FtcMenu.Menu
 
     public enum Auto_path {
         PATH1,
-        PATH2
+        PATH2,
+        PATH3,
+        PATH4
     }
 
     // Menu option variables
@@ -104,7 +106,7 @@ public class Olivanie_Autonomous_Odometry extends OpMode implements FtcMenu.Menu
     /* Declare OpMode members. */
     private HalDashboard dashboard;
     Olivanie_Hardware robot = new Olivanie_Hardware();
-    Robosition position = new Robosition();
+//    Robosition position = new Robosition();
     RoboPoint roboPoint = new RoboPoint();
 
     static final double PROPORTIONAL_TERM = 1;
@@ -121,6 +123,19 @@ public class Olivanie_Autonomous_Odometry extends OpMode implements FtcMenu.Menu
 
     int errors = 0;
 
+    int state = 0;
+    int driveState = 0;
+    int count = 0;
+    int direction = 1;
+    double currentAngle = 0;
+    double currentPositionL = 0;
+    double currentPositionR = 0;
+    double leftTarget = 0;
+    double rightTarget = 0;
+    double angleTarget = 0;
+    double startingAngle = 0;
+    boolean moveOn = false;
+
     // code to run once after driver hits init
     @Override
     public void init() {
@@ -131,7 +146,7 @@ public class Olivanie_Autonomous_Odometry extends OpMode implements FtcMenu.Menu
         dashboard = HalDashboard.createInstance(telemetry);
 
         // Run though the menu ---------------------------------------------------------------------
-        doMenus();
+        //doMenus();
 
         if (alliance == Alliance.RED) {
             if (startposition == StartPosition.BUILDING1) {
@@ -140,6 +155,9 @@ public class Olivanie_Autonomous_Odometry extends OpMode implements FtcMenu.Menu
                         if (foundation == Foundation.YES) {
                             if (park == Park.WALL) {
                                 path = Auto_path.PATH1;
+                            }
+                            else if (park == Park.BRIDGE) {
+                                path = Auto_path.PATH3;
                             }
                         }
                     }
@@ -152,6 +170,9 @@ public class Olivanie_Autonomous_Odometry extends OpMode implements FtcMenu.Menu
                         if (foundation == Foundation.YES) {
                             if (park == Park.WALL) {
                                 path = Auto_path.PATH2;
+                            }
+                            else if (park == Park.BRIDGE) {
+                                path = Auto_path.PATH4;
                             }
                         }
                     }
@@ -184,7 +205,7 @@ public class Olivanie_Autonomous_Odometry extends OpMode implements FtcMenu.Menu
 
         dashboard.displayPrintf(0, "Status: Running");
 
-        driveToPoint(1, new WayPoint(12, 24, 0, 0));
+        //driveToPoint(1, new WayPoint(12, 24, 0, 0));
     }
 
     /*
@@ -192,6 +213,13 @@ public class Olivanie_Autonomous_Odometry extends OpMode implements FtcMenu.Menu
      */
         @Override
         public void loop () {
+
+            if (state == 0) {
+                moveOn = DriveStraight(.5, 24);
+                if (moveOn) {
+                    state ++;
+                }
+            }
 
         }
 
@@ -450,6 +478,95 @@ public class Olivanie_Autonomous_Odometry extends OpMode implements FtcMenu.Menu
         PIDTurn(power, point.getAngle() - roboPoint.getAngle()); //Eventually add to above w/ PID
     }
 
+    boolean DriveStraight (double power, double inches) {
+        double speed = Range.clip(Math.abs(power), -1.0, 1.0);
+        double error;
+        double proportional = 1;
+        double output;
+        boolean done = false;
+        currentPositionL = robot.getLeftWheelEncoder() / (COUNTS_PER_INCH);
+        currentPositionR = robot.getRightWheelEncoder() / (COUNTS_PER_INCH);
+        if (driveState == 0) {
+            leftTarget = currentPositionL + (inches * COUNTS_PER_INCH);
+            rightTarget = currentPositionR + (inches * COUNTS_PER_INCH);
+            if (leftTarget > currentPositionL) {
+                direction = -1;
+            }
+            driveState ++;
+            dashboard.displayPrintf(5, "drive state 0");
+        }
+        else if (driveState == 1) {
+            output = Range.clip(speed * (double) direction * (double) count, -speed, speed);
+            robot.setPowerAll(output);
+            count ++;
+            if (Math.abs(output) >= Math.abs(Range.clip(proportional * (rightTarget - currentPositionR), -speed, speed))) {
+                driveState ++;
+                count = 0;
+            }
+            dashboard.displayPrintf(5, "drive state 1");
+            dashboard.displayPrintf(6, "output: %f", Math.abs(output));
+            dashboard.displayPrintf(7, "prop: %f", Math.abs(Range.clip(proportional * (rightTarget - currentPositionR), -speed, speed)));
+        }
+        else if (driveState == 2) {
+            error = ((currentPositionR - rightTarget) + (currentPositionL - leftTarget)) / 2.0;
+            output = Range.clip(proportional * (rightTarget - currentPositionR) * (double) direction,
+                    -speed, speed);
+            robot.setPowerAll(output);
+            if (error < 1.0) {
+                robot.setPowerAll(0);
+                driveState = 0;
+                done = true;
+            }
+            dashboard.displayPrintf(5, "drive state 2");
+            dashboard.displayPrintf(6, "error %f", error);
+        }
+        return done;
+    }
+
+    boolean DriveTurn (double power, double degrees) {
+        double speed = Range.clip(Math.abs(power), -1.0, 1.0);
+        double radians = Math.toRadians(degrees);
+        currentPositionL = robot.getLeftWheelEncoder();
+        currentPositionR = robot.getRightWheelEncoder();
+        currentAngle = -(currentPositionL - currentPositionR) / roboPoint.getDistanceBetweenWheels();
+        double angleError = radians + currentAngle;
+        int direction = 1;
+        double output;
+        double proportional = 1;
+        boolean done = false;
+        if (driveState == 0) {
+            startingAngle = currentAngle;
+            angleTarget = radians + currentAngle;
+            if (angleError > 0) {
+                direction = -1;
+            }
+            driveState ++;
+        }
+        else if (driveState == 1) {
+            output = Range.clip(speed * (double) count, -speed, speed);
+            robot.setPowerLeft(output * (double) direction);
+            robot.setPowerRight(output * (double) direction * -1.0);
+            count ++;
+            if (Math.abs(output) > Math.abs(Range.clip(proportional
+                    * ((angleTarget - startingAngle)- (currentAngle - startingAngle)) / angleTarget,
+                    -speed, speed))) {
+                count = 0;
+                driveState++;
+            }
+        }
+        else if (driveState == 2) {
+            output = Range.clip(proportional * ((angleTarget - startingAngle)- (currentAngle
+                            - startingAngle)) / angleTarget, -speed, speed);
+            robot.setPowerLeft(output * (double) direction);
+            robot.setPowerRight(output * (double) direction * -1.0);
+            if (Math.abs(angleTarget - currentAngle) < 1) {
+                robot.setPowerAll(0);
+                driveState = 0;
+                done = true;
+            }
+        }
+        return done;
+    }
     /**
      * DriveRobotPosition drives the robot the set number of inches at the given power level.
      * @param inches How far to drive, can be negative
@@ -585,7 +702,7 @@ public class Olivanie_Autonomous_Odometry extends OpMode implements FtcMenu.Menu
         parkMenu.addChoice("None", Park.NONE, false);
 
 
-        FtcMenu.walkMenuTree(modeMenu);
+        //FtcMenu.walkMenuTree(modeMenu);
         runmode = modeMenu.getCurrentChoiceObject();
         delay = (int) delayMenu.getCurrentValue();
         alliance = allianceMenu.getCurrentChoiceObject();

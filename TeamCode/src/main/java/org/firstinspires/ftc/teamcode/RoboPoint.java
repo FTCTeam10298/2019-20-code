@@ -25,6 +25,9 @@ public class RoboPoint extends Point {
         super(xCoordinate, yCoordinate, angleDegrees);
     }
 
+    public double getDistanceBetweenWheels () {
+        return DISTANCE_BETWEEN_WHEELS;
+    }
 
     /**
      * Gets the current distance away from a point.

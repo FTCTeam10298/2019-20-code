@@ -26,9 +26,12 @@ public class Olivanie_Hardware
     public Servo leftFoundation = null;
     public Servo rightFoundation = null;
     public Servo gate = null;
+    public Servo markerDumper = null;
 
     public static final double CLOSED = 0;
-    public static final double OPEN = 0.5;
+    public static final double OPEN = 0.7;
+    public static final double HELD = 0;
+    public static final double DUMPER = 0.5;
 
     /* Local OpMode members. */
     HardwareMap hwMap              = null;
@@ -57,6 +60,7 @@ public class Olivanie_Hardware
         leftFoundation = hwMap.servo.get("left foundation");
         rightFoundation = hwMap.servo.get("right foundation");
         gate = hwMap.servo.get("gate");
+        markerDumper = hwMap.servo.get("son of brian");
 
         // Set direction for all motors
         leftDriveF.setDirection(DcMotor.Direction.REVERSE);
@@ -81,8 +85,9 @@ public class Olivanie_Hardware
 
         // Set all servos to default positions
         claw.setPosition(1);
-        openFoundation();
+        closeFoundation();
         gate.setPosition(CLOSED);
+        markerDumper.setPosition(HELD);
 
         // Set all motors to use brake mode
         leftDriveF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -137,20 +142,20 @@ public class Olivanie_Hardware
 
     public double getLeftWheelEncoder () {
         return ((double) leftDriveF.getCurrentPosition() + (double) leftDriveB.getCurrentPosition())
-                / 2;
+                / 2.0;
     }
 
     public double getRightWheelEncoder () {
         return ((double) rightDriveF.getCurrentPosition()
-                + (double) rightDriveB.getCurrentPosition()) / 2;
+                + (double) rightDriveB.getCurrentPosition()) / 2.0;
     }
 
-    public void closeFoundation () {
+    public void openFoundation () {
         leftFoundation.setPosition(.2);
         rightFoundation.setPosition(1);
     }
 
-    public void openFoundation () {
+    public void closeFoundation () {
         leftFoundation.setPosition(1);
         rightFoundation.setPosition(0);
     }
@@ -198,11 +203,16 @@ public class Olivanie_Hardware
 
     boolean driveAllAreBusy()
     {
-        return leftDriveF.isBusy() && rightDriveF.isBusy() && leftDriveB.isBusy()
-                && rightDriveB.isBusy();
+        return leftDriveF.isBusy() && rightDriveF.isBusy();
     }
 
 
+    boolean driveAnyReachedTarget() {
+        return ((Math.abs(leftDriveF.getCurrentPosition() - leftDriveF.getTargetPosition()) > 50.0)
+                && (Math.abs(leftDriveB.getCurrentPosition() - leftDriveB.getTargetPosition()) > 50.0)
+                && (Math.abs(rightDriveF.getCurrentPosition() - rightDriveB.getTargetPosition()) > 50.0)
+                && (Math.abs(rightDriveB.getCurrentPosition() - rightDriveB.getTargetPosition()) > 50.0));
+    }
     void driveAddTargetPosition(int flPosition, int frPosition, int blPosition, int brPosition)
     {
         leftDriveF.setTargetPosition(leftDriveF.getTargetPosition()+flPosition);

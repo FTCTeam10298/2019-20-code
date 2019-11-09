@@ -211,11 +211,11 @@ public abstract class FtcMenu
      * @param rootMenu specifies the root of the menu tree.
      * //@param opmode specifies the linear opmode that calls this. ******UNNECESSARY IN OPMODE******
      */
-    public static void walkMenuTree(FtcMenu rootMenu)//, LinearOpMode opmode)
+    public static void walkMenuTree(FtcMenu rootMenu, LinearOpMode opmode)
     {
         setRootMenu(rootMenu);
         rootMenu.displayMenu();
-        while (!runMenus()) // && !opmode.isStopRequested())
+        while (!runMenus() && !opmode.isStopRequested())
         {
             TrcUtil.sleep(LOOP_INTERVAL);
         }

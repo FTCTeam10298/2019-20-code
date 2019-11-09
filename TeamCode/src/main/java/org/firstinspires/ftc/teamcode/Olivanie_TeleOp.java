@@ -69,6 +69,7 @@ public class Olivanie_TeleOp extends OpMode {
     boolean switcher2 = false;
     boolean switcher3 = false;
     boolean switcher4 = false;
+    boolean switcher5 = false;
     boolean slowDrive = true;
 
     static final double DPAD_TURN_POWER = .1;
@@ -191,7 +192,7 @@ public class Olivanie_TeleOp extends OpMode {
         }
         else if (switcher3 && !gamepad1.x && !gamepad2.x) {
             if (robot.claw.getPosition() > .8) {
-                robot.claw.setPosition(.3);
+                robot.claw.setPosition(.5);
                 robot.gate.setPosition(robot.OPEN);
             }
             else {
@@ -208,12 +209,26 @@ public class Olivanie_TeleOp extends OpMode {
         }
         else if (switcher4 && !gamepad1.b && !gamepad2.b) {
             if (robot.leftFoundation.getPosition() < 0.3f) {
-                robot.openFoundation();
-            }
-            else {
                 robot.closeFoundation();
             }
+            else {
+                robot.openFoundation();
+            }
             switcher4 = false;
+        }
+
+        // Dumper
+        if ((gamepad1.dpad_up || gamepad2.dpad_up) && !switcher5) {
+            switcher5 = true;
+        }
+        else if (switcher5 && !gamepad1.dpad_up && !gamepad2.dpad_up) {
+            if (robot.markerDumper.getPosition() > .4) {
+                robot.markerDumper.setPosition(0);
+            }
+            else {
+                robot.markerDumper.setPosition(.7);
+            }
+            switcher5 = false;
         }
 
         roboPoint.updatePosition((((double)robot.leftDriveF.getCurrentPosition()

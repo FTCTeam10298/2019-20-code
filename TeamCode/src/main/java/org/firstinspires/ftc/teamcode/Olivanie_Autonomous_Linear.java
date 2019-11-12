@@ -244,11 +244,11 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
             robot.closeFoundation();
             sleep(1000);
             DriveRobotPosition(.4, 16, false);
-            if (path == Auto_path.PATH1) {
-                DriveRobotArc(1, 30, -.5);
+            if (alliance == Alliance.BLUE) {
+                DriveRobotArc(1, 40, -.6);
             }
-            else if (path == Auto_path.PATH2) {
-                DriveRobotArc(1, 30, .5);
+            else if (alliance == Alliance.RED) {
+                DriveRobotArc(1, 40, .6);
             }
             robot.openFoundation();
             sleep(1000);

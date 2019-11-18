@@ -32,6 +32,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 /**
@@ -43,6 +44,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
  */
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="EpicGamerMoment TeleOp", group="Gamer")
+@Disabled
 public class EpicGamerMoment_TeleOp extends OpMode {
 
     /* Declare OpMode members. */

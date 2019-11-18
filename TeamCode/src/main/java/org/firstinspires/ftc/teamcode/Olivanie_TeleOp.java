@@ -65,6 +65,7 @@ public class Olivanie_TeleOp extends OpMode {
     double x = roboPoint.getX();
     double y = roboPoint.getY();
     int collectorOn = 0;
+    int counter = 101;
     boolean switcher1 = false;
     boolean switcher2 = false;
     boolean switcher3 = false;
@@ -174,32 +175,38 @@ public class Olivanie_TeleOp extends OpMode {
         }
 
         if (collectorOn == 1) {
-            robot.leftCollector.setPower(1);
-            robot.rightCollector.setPower(1);
+            robot.collectorOn();
         }
         else if (collectorOn == 2) {
-            robot.leftCollector.setPower(-1);
-            robot.rightCollector.setPower(-1);
+            robot.collectorRev();
         }
         else {
-            robot.rightCollector.setPower(0);
-            robot.leftCollector.setPower(0);
+            robot.collectorOff();
         }
 
-        // Claw
+        // Dumper
         if ((gamepad1.x || gamepad2.x) && !switcher3) {
             switcher3 = true;
         }
         else if (switcher3 && !gamepad1.x && !gamepad2.x) {
-            if (robot.claw.getPosition() > .8) {
-                robot.claw.setPosition(.5);
+            if (robot.gate.getPosition() > 0.5f) {
+                counter = 0;
+                robot.gate.setPosition(robot.CLOSED);
+            }
+            else {
+                counter = 0;
                 robot.gate.setPosition(robot.OPEN);
+            }
+            switcher3 = false;
+        }
+
+        if (counter == 5) {
+            if (robot.claw.getPosition() > .8) {
+                robot.claw.setPosition(.45);
             }
             else {
                 robot.claw.setPosition(1);
-                robot.gate.setPosition(robot.CLOSED);
             }
-            switcher3 = false;
         }
 
 
@@ -208,7 +215,7 @@ public class Olivanie_TeleOp extends OpMode {
             switcher4 = true;
         }
         else if (switcher4 && !gamepad1.b && !gamepad2.b) {
-            if (robot.leftFoundation.getPosition() < 0.3f) {
+            if (robot.leftFoundation.getPosition() < 0.7f) {
                 robot.closeFoundation();
             }
             else {
@@ -230,6 +237,8 @@ public class Olivanie_TeleOp extends OpMode {
             }
             switcher5 = false;
         }
+
+        counter++;
 
         roboPoint.updatePosition((((double)robot.leftDriveF.getCurrentPosition()
                 + (double)robot.leftDriveB.getCurrentPosition())/2)
@@ -254,6 +263,7 @@ public class Olivanie_TeleOp extends OpMode {
         telemetry.addData("Point X: ", "%f", robot.getLeftWheelEncoder());
         telemetry.addData("Point Y: ", "%f", robot.getRightWheelEncoder());
         telemetry.addData("Point Angle: ", roboPoint.getAngle());
+        telemetry.addData("Counter:", counter);
         telemetry.update();
 
     }

@@ -142,11 +142,6 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         // Run though the menu ---------------------------------------------------------------------
         doMenus();
 
-//        if (startposition == StartPosition.SILVER && crater == Crater.FAR) {
-//            dashboard.displayPrintf(1, "You picked the wrong option, Stephanie!");
-//            crater = Crater.NEAR;
-//            errors += 1;
-//        }
 
         if (alliance == Alliance.RED) {
             if (startposition == StartPosition.BUILDING1) {
@@ -239,24 +234,67 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         }
 
         if (DoTask("Drive", runmode, true)) {
-            robot.openFoundation();
-            DriveRobotPosition(.3, -32, false);
-            robot.closeFoundation();
-            sleep(1000);
-            DriveRobotPosition(.4, 16, false);
-            if (alliance == Alliance.BLUE) {
-                DriveRobotArc(1, 40, -.6);
+            if (startposition == StartPosition.BUILDING1) {
+                robot.openFoundation();
+                DriveRobotPosition(.3, -32, false);
+                robot.closeFoundation();
+                sleep(1000);
+                DriveRobotPosition(.4, 16, false);
+                if (alliance == Alliance.BLUE) {
+                    DriveRobotArc(1, 40, -.6);
+                } else if (alliance == Alliance.RED) {
+                    DriveRobotArc(1, 40, .6);
+                }
+                robot.openFoundation();
+                sleep(1000);
+                DriveRobotPosition(.5, 3, false);
+                robot.closeFoundation();
+                sleep(1000);
+                DriveRobotTime(3000, -.3);
+                DriveRobotPosition(.5, 40, false);
             }
-            else if (alliance == Alliance.RED) {
-                DriveRobotArc(1, 40, .6);
+            else if (startposition == StartPosition.LOADING1) {
+                DriveRobotPosition(.5, 24, false);
+                if (alliance == Alliance.RED) {
+                    DriveRobotTurn(.2, 45, false);
+                }
+                else if (alliance == Alliance.BLUE) {
+                    DriveRobotTurn(.2, -45, false);
+                }
+                robot.collectorOn();
+                DriveRobotPosition(.1, 10, false);
+                sleep(1000);
+                DriveRobotPosition(.2, -12, false);
+                if (alliance == Alliance.RED) {
+                    DriveRobotTurn(.3, 45, false);
+                }
+                else if (alliance == Alliance.BLUE) {
+                    DriveRobotTurn(.3, -45, false);
+                }
+                DriveRobotPosition(.5, -36, false);
+                if (alliance == Alliance.RED) {
+                    DriveRobotTurn(.2, 90, false);
+                }
+                else if (alliance == Alliance.BLUE) {
+                    DriveRobotTurn(.2, -90, false);
+                }
+                DriveRobotPosition(.1, -12, false);
+                robot.closeFoundation();
+                sleep(1000);
+                DriveRobotPosition(.4, 16, false);
+                if (alliance == Alliance.BLUE) {
+                    DriveRobotArc(1, 40, -.6);
+                } else if (alliance == Alliance.RED) {
+                    DriveRobotArc(1, 40, .6);
+                }
+                robot.openFoundation();
+                sleep(1000);
+                DriveRobotPosition(.5, 3, false);
+                robot.closeFoundation();
+                sleep(1000);
+                DriveRobotTime(3000, -.3);
+                DriveRobotPosition(.5, 40, false);
             }
-            robot.openFoundation();
-            sleep(1000);
-            DriveRobotPosition(.5, 3, false);
-            robot.closeFoundation();
-            sleep(1000);
-            DriveRobotTime(3000, -.3);
-            DriveRobotPosition(.5, 40, false);
         }
 
     }

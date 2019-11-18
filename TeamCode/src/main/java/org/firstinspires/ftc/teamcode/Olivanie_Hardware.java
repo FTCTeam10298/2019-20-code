@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -27,11 +29,15 @@ public class Olivanie_Hardware
     public Servo rightFoundation = null;
     public Servo gate = null;
     public Servo markerDumper = null;
+    public ColorSensor colorSensor = null;
+    public DistanceSensor distanceSensor = null;
 
-    public static final double CLOSED = 0;
-    public static final double OPEN = 0.7;
+    public static final double CLOSED = 0.44;
+    public static final double OPEN = 1;
     public static final double HELD = 0;
     public static final double DUMPER = 0.5;
+
+    RoboPoint roboPoint = new RoboPoint();
 
     /* Local OpMode members. */
     HardwareMap hwMap              = null;
@@ -61,6 +67,10 @@ public class Olivanie_Hardware
         rightFoundation = hwMap.servo.get("right foundation");
         gate = hwMap.servo.get("gate");
         markerDumper = hwMap.servo.get("son of brian");
+
+        // Define and initialize sensors
+        colorSensor = hwMap.colorSensor.get("color distance");
+        distanceSensor = hwMap.get(DistanceSensor.class, "color distance");
 
         // Set direction for all motors
         leftDriveF.setDirection(DcMotor.Direction.REVERSE);
@@ -140,6 +150,36 @@ public class Olivanie_Hardware
         rightDriveB.setPower(power);
     }
 
+    public void setRoboPoint (double x, double y, double angle) {
+        setX(x);
+        setY(y);
+        setAngle(angle);
+    }
+
+    public void setX (double x) {
+        roboPoint.setX(x);
+    }
+
+    public void setY (double y) {
+        roboPoint.setY(y);
+    }
+
+    public void setAngle (double angle) {
+        roboPoint.setAngle(angle);
+    }
+
+    public double getXPos () {
+        return roboPoint.getX();
+    }
+
+    public double getYPos () {
+        return roboPoint.getY();
+    }
+
+    public double getWorldAngle_rad () {
+        return Math.toRadians(roboPoint.getAngle());
+    }
+
     public double getLeftWheelEncoder () {
         return ((double) leftDriveF.getCurrentPosition() + (double) leftDriveB.getCurrentPosition())
                 / 2.0;
@@ -151,13 +191,30 @@ public class Olivanie_Hardware
     }
 
     public void openFoundation () {
-        leftFoundation.setPosition(.2);
+        leftFoundation.setPosition(.6);
         rightFoundation.setPosition(1);
     }
 
     public void closeFoundation () {
-        leftFoundation.setPosition(1);
+        leftFoundation.setPosition(.8);
         rightFoundation.setPosition(0);
+    }
+
+    public void runCollector (double power) {
+        leftCollector.setPower(power);
+        rightCollector.setPower(power);
+    }
+
+    public void collectorOn () {
+        runCollector(1);
+    }
+
+    public void collectorOff () {
+        runCollector(0);
+    }
+
+    public void  collectorRev () {
+        runCollector(-1);
     }
 
     void driveSetRunToPosition()

@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.util.Range;
 
 /**
  * This file provides Teleop driving for our robot.
@@ -216,10 +215,10 @@ public class Olivanie_TeleOp extends OpMode {
         }
         else if (switcher4 && !gamepad1.b && !gamepad2.b) {
             if (robot.leftFoundation.getPosition() < 0.7f) {
-                robot.closeFoundation();
+                robot.openFoundation();
             }
             else {
-                robot.openFoundation();
+                robot.closeFoundation();
             }
             switcher4 = false;
         }

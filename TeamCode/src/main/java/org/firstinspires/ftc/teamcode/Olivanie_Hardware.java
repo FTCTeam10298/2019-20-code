@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -32,8 +31,8 @@ public class Olivanie_Hardware
     public ColorSensor colorSensor = null;
     public DistanceSensor distanceSensor = null;
 
-    public static final double CLOSED = 0.44;
-    public static final double OPEN = 1;
+    public static final double CLOSED = 0.1;
+    public static final double OPEN = 0.9;
     public static final double HELD = 0;
     public static final double DUMPER = 0.5;
 
@@ -95,7 +94,7 @@ public class Olivanie_Hardware
 
         // Set all servos to default positions
         claw.setPosition(1);
-        closeFoundation();
+        openFoundation();
         gate.setPosition(CLOSED);
         markerDumper.setPosition(HELD);
 
@@ -190,13 +189,13 @@ public class Olivanie_Hardware
                 + (double) rightDriveB.getCurrentPosition()) / 2.0;
     }
 
-    public void openFoundation () {
+    public void closeFoundation() {
         leftFoundation.setPosition(.6);
         rightFoundation.setPosition(1);
     }
 
-    public void closeFoundation () {
-        leftFoundation.setPosition(.8);
+    public void openFoundation() {
+        leftFoundation.setPosition(1);
         rightFoundation.setPosition(0);
     }
 

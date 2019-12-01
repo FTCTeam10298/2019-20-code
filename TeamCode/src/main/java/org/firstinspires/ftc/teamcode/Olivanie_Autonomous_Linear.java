@@ -227,27 +227,29 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                 DriveRobotPosition(.4, -32, false);
                 robot.closeFoundation();
                 sleep(800);
-                DriveRobotPosition(.4, 20, false);
+                DriveRobotPosition(.4, 24, false);
                 if (alliance == Alliance.BLUE) {
-                    DriveRobotArc(1, 10, -.6);
+                    DriveRobotArc(1, 12, -.7);
                     DriveRobotPosition(.3, 6, false);
-                    DriveRobotArc(1, 3, -.6);
+                    DriveRobotArc(1, 12, -.7);
                 } else if (alliance == Alliance.RED) {
-                    DriveRobotArc(1, 10, .7);
+                    DriveRobotArc(1, 12, .7);
                     DriveRobotPosition(.3, 6, false);
-                    DriveRobotArc(1,3, .7);
+                    DriveRobotArc(1,9, .7);
                 }
-                robot.openFoundation();
-                sleep(800);
-                DriveRobotPosition(.5, 3, false);
-                robot.closeFoundation();
-                sleep(800);
-                DriveRobotTime(2500, -.3);
-                robot.openFoundation();
-                sleep(800);
-                DriveRobotPosition(1, 10, false);
-                DriveRobotTime(400, -1);
-                DriveRobotPosition(.6, 40, false);
+                if (park != Park.NONE) {
+                    robot.openFoundation();
+                    sleep(800);
+                    DriveRobotPosition(.5, 3, false);
+                    robot.closeFoundation();
+                    sleep(800);
+                    DriveRobotTime(2500, -.3);
+                    robot.openFoundation();
+                    sleep(800);
+                    DriveRobotPosition(1, 10, false);
+                    DriveRobotTime(400, -1);
+                    DriveRobotPosition(.6, 40, false);
+                }
             }
             else if (startposition == StartPosition.LOADING1) {
                 if (foundation == Foundation.YES) {

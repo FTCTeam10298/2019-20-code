@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Range;
+
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -11,7 +13,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  * This class is used to define all the specific hardware for a single robot.
  */
 
-public class Olivanie_Hardware
+public class Olivanie_v2_Hardware
 {
 
 
@@ -22,11 +24,11 @@ public class Olivanie_Hardware
     public DcMotor rightDriveB = null;
     public DcMotor leftCollector = null;
     public DcMotor rightCollector = null;
-    public DcMotor arm = null;
     public Servo claw = null;
     public Servo leftFoundation = null;
     public Servo rightFoundation = null;
-    public Servo gate = null;
+    public Servo left4Bar = null;
+    public Servo right4Bar = null;
     public Servo markerDumper = null;
     public ColorSensor colorSensor = null;
     public DistanceSensor distanceSensor = null;
@@ -34,7 +36,12 @@ public class Olivanie_Hardware
     public static final double CLOSED = 0.1;
     public static final double OPEN = 0.9;
     public static final double HELD = 0;
-    public static final double DUMPER = 0.5;
+    public static final double DOWN = .9;
+    public static final double BLOCK1 = .1;
+    public static final double BLOCK2 = .2;
+    public static final double BLOCK3 = .3;
+    public static final double BLOCK4 = .4;
+    public static final double [] ARMPOSITION = {DOWN, BLOCK1, BLOCK2, BLOCK3, BLOCK4};
 
     RoboPoint roboPoint = new RoboPoint();
 
@@ -42,7 +49,7 @@ public class Olivanie_Hardware
     HardwareMap hwMap              = null;
 
     /* Constructor */
-    public Olivanie_Hardware() {
+    public Olivanie_v2_Hardware() {
 
     }
 
@@ -58,13 +65,13 @@ public class Olivanie_Hardware
         rightDriveB = hwMap.dcMotor.get("right drive b");
         leftCollector = hwMap.dcMotor.get("left collector");
         rightCollector = hwMap.dcMotor.get("right collector");
-        arm = hwMap.dcMotor.get("arm");
 
         // Define and initialize servos
         claw = hwMap.servo.get("claw");
         leftFoundation = hwMap.servo.get("left foundation");
         rightFoundation = hwMap.servo.get("right foundation");
-        gate = hwMap.servo.get("gate");
+        left4Bar = hwMap.servo.get("left 4 bar");
+        right4Bar = hwMap.servo.get("right 4 bar");
         markerDumper = hwMap.servo.get("son of brian");
 
         // Define and initialize sensors
@@ -80,8 +87,6 @@ public class Olivanie_Hardware
         leftCollector.setDirection(DcMotor.Direction.FORWARD);
         rightCollector.setDirection(DcMotor.Direction.REVERSE);
 
-        arm.setDirection(DcMotor.Direction.FORWARD);
-
 
         // Set all motors to zero power
         leftDriveF.setPower(0);
@@ -89,13 +94,11 @@ public class Olivanie_Hardware
         leftDriveB.setPower(0);
         rightDriveB.setPower(0);
         leftCollector.setPower(0);
-        rightCollector.setPower(0);
-        arm.setPower(0);
 
         // Set all servos to default positions
-        claw.setPosition(1);
+        openClaw();
         openFoundation();
-        gate.setPosition(CLOSED);
+        set4Bar(DOWN);
         markerDumper.setPosition(HELD);
 
         // Set all motors to use brake mode
@@ -105,10 +108,6 @@ public class Olivanie_Hardware
         rightDriveB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftCollector.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightCollector.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-
-
 
         leftDriveF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDriveF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -122,7 +121,6 @@ public class Olivanie_Hardware
         rightDriveB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
 
@@ -212,7 +210,7 @@ public class Olivanie_Hardware
     }
 
     public void collectorOn () {
-        runCollector(1);
+        runCollector(-1);
     }
 
     public void collectorOff () {
@@ -220,7 +218,20 @@ public class Olivanie_Hardware
     }
 
     public void  collectorRev () {
-        runCollector(-1);
+        runCollector(1);
+    }
+
+    public void set4Bar (double position) {
+        left4Bar.setPosition(position);
+        right4Bar.setPosition(1 - position);
+    }
+
+    public void openClaw () {
+        claw.setPosition(.5);
+    }
+
+    public void closeClaw() {
+        claw.setPosition(1);
     }
 
     void driveSetRunToPosition()

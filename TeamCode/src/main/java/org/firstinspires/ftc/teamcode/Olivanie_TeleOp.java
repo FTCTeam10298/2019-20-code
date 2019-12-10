@@ -223,7 +223,7 @@ public class Olivanie_TeleOp extends OpMode {
             switcher4 = false;
         }
 
-        // Dumper
+        // Marker dumper
         if ((gamepad1.dpad_up || gamepad2.dpad_up) && !switcher5) {
             switcher5 = true;
         }

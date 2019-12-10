@@ -76,6 +76,9 @@ public class Olivanie_v2_TeleOp extends OpMode {
     boolean armChangeUp = false;
     boolean armMoving = false;
 
+    int counter = 101;
+    boolean switcher3 = false;
+    boolean switcher4 = false;
 
     // Code to run once when the driver hits INIT
     @Override
@@ -168,11 +171,10 @@ public class Olivanie_v2_TeleOp extends OpMode {
                 inertia = 0.4;
             }
 
-            robot.setPowerEach(frontLeftPower*inertia, backLeftPower*inertia,
+            robot.driveSetPower(frontLeftPower*inertia, backLeftPower*inertia,
                     frontRightPower*inertia, backRightPower*inertia);
 
         // Collector
-
         if (gamepad1.left_bumper || gamepad1.right_bumper || gamepad2.left_bumper
                 || gamepad2.right_bumper)
             collectOtronSWITCHING = true;
@@ -197,10 +199,9 @@ public class Olivanie_v2_TeleOp extends OpMode {
             robot.collectorRev();
         else
             robot.collectorOff();
-
         // End Collector
-        // Claw
 
+        // Claw
         if ((gamepad1.x || gamepad2.x) && !clawSWITCHING) {
             clawSWITCHING = true;
         }
@@ -215,30 +216,68 @@ public class Olivanie_v2_TeleOp extends OpMode {
             }
             clawSWITCHING = false;
         }
-
         // End Claw
-        // Arm
 
-        if (gamepad1.dpad_up || gamepad2.dpad_up) {
+        // Dumper
+        if ((gamepad1.y || gamepad2.y) && !switcher3) {
+            switcher3 = true;
+        }
+        else if (switcher3 && !gamepad1.y && !gamepad2.y) {
+            if (robot.gate.getPosition() > 0.3f) {
+                counter = 0;
+                robot.gate.setPosition(robot.GATE_OPEN);
+            }
+            else {
+                counter = 0;
+                robot.gate.setPosition(robot.GATE_CLOSED);
+            }
+            switcher3 = false;
+        }
+
+        if (counter == 5) {
+            if (robot.skystoneDumper.getPosition() > .8) {
+                robot.skystoneDumper.setPosition(robot.SKYSTONE_DUMPER_OPEN);
+            }
+            else {
+                robot.skystoneDumper.setPosition(robot.SKYSTONE_DUMPER_CLOSED);
+            }
+        }
+
+        // Foundation
+        if ((gamepad1.a || gamepad2.a) && !switcher4) {
+            switcher4 = true;
+        }
+        else if (switcher4 && !gamepad1.a && !gamepad2.a) {
+            if (robot.leftFoundation.getPosition() < 0.7f) {
+                robot.openFoundation();
+            }
+            else {
+                robot.closeFoundation();
+            }
+            switcher4 = false;
+        }
+
+        // Arm
+        if (gamepad1.dpad_right || gamepad2.dpad_right) {
             arm += .1 * dt;
         }
-        else if (gamepad1.dpad_down || gamepad2.dpad_down) {
+        else if (gamepad1.dpad_left || gamepad2.dpad_left) {
             arm -= .1 * dt;
         }
 
-        if ((gamepad1.a || gamepad2.a) && !armChangeDown) {
+        if ((gamepad1.dpad_down || gamepad2.dpad_down) && !armChangeDown) {
             armChangeDown = true;
         }
-        else if (!(gamepad1.a || gamepad2.a) && armChangeDown) {
+        else if (!(gamepad1.dpad_down || gamepad2.dpad_down) && armChangeDown) {
             height--;
             armChangeDown = false;
             armMoving = true;
         }
 
-        if ((gamepad1.y || gamepad2.y) && !armChangeUp) {
+        if ((gamepad1.dpad_up || gamepad2.dpad_up) && !armChangeUp) {
             armChangeUp = true;
         }
-        else if (!(gamepad1.y || gamepad2.y) && armChangeUp) {
+        else if (!(gamepad1.dpad_up || gamepad2.dpad_up) && armChangeUp) {
             height++;
             armChangeUp = false;
             armMoving = true;
@@ -257,13 +296,8 @@ public class Olivanie_v2_TeleOp extends OpMode {
         }
 
         robot.set4Bar(arm);
-
         // End Arm
 
+        counter++;
     }
-
 }
-
-    /**
-    FUNCTIONS---------------------------------------------------------------------------------------
-     */

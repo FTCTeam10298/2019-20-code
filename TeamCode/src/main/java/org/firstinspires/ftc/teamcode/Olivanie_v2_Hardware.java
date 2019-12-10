@@ -29,14 +29,20 @@ public class Olivanie_v2_Hardware
     public Servo rightFoundation = null;
     public Servo left4Bar = null;
     public Servo right4Bar = null;
+    public Servo gate = null;
+    public Servo skystoneDumper = null;
     public Servo markerDumper = null;
     public ColorSensor colorSensor = null;
     public DistanceSensor distanceSensor = null;
 
     public static final double CLOSED = 0.1;
-    public static final double OPEN = 0.9;
+    public static final double OPEN = 1;
     public static final double HELD = 0;
     public static final double DOWN = .9;
+    public static final double GATE_OPEN = 0.05;
+    public static final double GATE_CLOSED = 0.4;
+    public static final double SKYSTONE_DUMPER_OPEN = 0.6;
+    public static final double SKYSTONE_DUMPER_CLOSED = 1;
     public static final double BLOCK1 = .1;
     public static final double BLOCK2 = .2;
     public static final double BLOCK3 = .3;
@@ -72,6 +78,8 @@ public class Olivanie_v2_Hardware
         rightFoundation = hwMap.servo.get("right foundation");
         left4Bar = hwMap.servo.get("left 4 bar");
         right4Bar = hwMap.servo.get("right 4 bar");
+        gate = hwMap.servo.get("gate");
+        skystoneDumper = hwMap.servo.get("skystone dumper");
         markerDumper = hwMap.servo.get("son of brian");
 
         // Define and initialize sensors
@@ -99,13 +107,17 @@ public class Olivanie_v2_Hardware
         openClaw();
         openFoundation();
         set4Bar(DOWN);
+        gate.setPosition(GATE_CLOSED);
+        skystoneDumper.setPosition(SKYSTONE_DUMPER_CLOSED);
         markerDumper.setPosition(HELD);
 
-        // Set all motors to use brake mode
+        // Set motors to use brake mode
         leftDriveF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightDriveF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftDriveB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightDriveB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        // Use coast on these
         leftCollector.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightCollector.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
@@ -114,11 +126,13 @@ public class Olivanie_v2_Hardware
         leftDriveB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDriveB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        // Set almost all motors to run with encoders
+        // Set motors to run with encoders
         leftDriveF.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightDriveF.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftDriveB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightDriveB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        // No encoders on these
         leftCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -130,28 +144,27 @@ public class Olivanie_v2_Hardware
      * FUNCTIONS
      */
 
-    public void setPowerAll (double power) {
-        leftDriveF.setPower(power);
-        rightDriveF.setPower(power);
-        leftDriveB.setPower(power);
-        rightDriveB.setPower(power);
+    /**
+     * driveSetPowerAll sets all of the drive train motors to the specified power level.
+     * @param power Power level to set all motors to
+     */
+    public void driveSetPowerAll (double power)
+    {
+        driveSetPower(power, power, power, power);
     }
 
-    public void setPowerEach (double powerLF, double powerLB, double powerRF, double powerRB) {
+    /**
+     * driveSetPower sets all of the drive train motors to the specified power levels.
+     * @param powerLF Power level to set front left motor to
+     * @param powerRF Power level to set front right motor to
+     * @param powerLB Power level to set back left motor to
+     * @param powerRB Power level to set back right motor to
+     */
+    public void driveSetPower (double powerLF, double powerLB, double powerRF, double powerRB) {
         leftDriveF.setPower(powerLF);
         rightDriveF.setPower(powerRF);
         leftDriveB.setPower(powerLB);
         rightDriveB.setPower(powerRB);
-    }
-
-    public void setPowerLeft (double power) {
-        leftDriveF.setPower(power);
-        leftDriveB.setPower(power);
-    }
-
-    public void setPowerRight (double power) {
-        rightDriveF.setPower(power);
-        rightDriveB.setPower(power);
     }
 
     public void setRoboPoint (double x, double y, double angle) {
@@ -234,6 +247,18 @@ public class Olivanie_v2_Hardware
         claw.setPosition(1);
     }
 
+    /**
+     * driveSetMode sets all of the drive train motors to the specified mode.
+     * @param runmode RunMode to set motors to
+     */
+    void driveSetMode(DcMotor.RunMode runmode)
+    {
+        leftDriveF.setMode(runmode);
+        rightDriveF.setMode(runmode);
+        leftDriveB.setMode(runmode);
+        rightDriveB.setMode(runmode);
+    }
+
     void driveSetRunToPosition()
     {
         if (leftDriveF.getMode()      != DcMotor.RunMode.RUN_TO_POSITION ||
@@ -249,19 +274,7 @@ public class Olivanie_v2_Hardware
     }
 
     /**
-     * driveSetMode sets all of the drive train motors to the specified mode.
-     * @param runmode RunMode to set motors to
-     */
-    void driveSetMode(DcMotor.RunMode runmode)
-    {
-        leftDriveF.setMode(runmode);
-        rightDriveF.setMode(runmode);
-        leftDriveB.setMode(runmode);
-        rightDriveB.setMode(runmode);
-    }
-
-    /**
-     * driveSetMode sets all of the drive train motors to the specified positions.
+     * driveSetTargetPosition sets all of the drive train motors to the specified positions.
      * @param flPosition Position to set front left motor to run to
      * @param frPosition Position to set front right motor to run to
      * @param blPosition Position to set back left motor to run to
@@ -275,11 +288,13 @@ public class Olivanie_v2_Hardware
         rightDriveB.setTargetPosition(brPosition);
     }
 
-    boolean driveAllAreBusy()
+    void driveAddTargetPosition(int flPosition, int frPosition, int blPosition, int brPosition)
     {
-        return leftDriveF.isBusy() && rightDriveF.isBusy();
+        leftDriveF.setTargetPosition(leftDriveF.getTargetPosition()+flPosition);
+        rightDriveF.setTargetPosition(rightDriveF.getTargetPosition()+frPosition);
+        leftDriveB.setTargetPosition(leftDriveB.getTargetPosition()+blPosition);
+        rightDriveB.setTargetPosition(rightDriveB.getTargetPosition()+brPosition);
     }
-
 
     boolean driveAnyReachedTarget() {
         return ((Math.abs(leftDriveF.getCurrentPosition() - leftDriveF.getTargetPosition()) > 50.0)
@@ -287,11 +302,10 @@ public class Olivanie_v2_Hardware
                 && (Math.abs(rightDriveF.getCurrentPosition() - rightDriveB.getTargetPosition()) > 50.0)
                 && (Math.abs(rightDriveB.getCurrentPosition() - rightDriveB.getTargetPosition()) > 50.0));
     }
-    void driveAddTargetPosition(int flPosition, int frPosition, int blPosition, int brPosition)
+
+    boolean driveAllAreBusy()
     {
-        leftDriveF.setTargetPosition(leftDriveF.getTargetPosition()+flPosition);
-        rightDriveF.setTargetPosition(rightDriveF.getTargetPosition()+frPosition);
-        leftDriveB.setTargetPosition(leftDriveB.getTargetPosition()+blPosition);
-        rightDriveB.setTargetPosition(rightDriveB.getTargetPosition()+brPosition);
+        return leftDriveF.isBusy() && rightDriveF.isBusy() && leftDriveB.isBusy()
+                && rightDriveB.isBusy();
     }
 }

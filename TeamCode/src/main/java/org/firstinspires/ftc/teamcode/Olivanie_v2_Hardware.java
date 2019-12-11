@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.util.Range;
-
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -25,8 +23,7 @@ public class Olivanie_v2_Hardware
     public DcMotor leftCollector = null;
     public DcMotor rightCollector = null;
     public Servo claw = null;
-    public Servo leftFoundation = null;
-    public Servo rightFoundation = null;
+    public Servo foundation = null;
     public Servo left4Bar = null;
     public Servo right4Bar = null;
     public Servo gate = null;
@@ -43,10 +40,10 @@ public class Olivanie_v2_Hardware
     public static final double GATE_CLOSED = 0.4;
     public static final double SKYSTONE_DUMPER_OPEN = 0.6;
     public static final double SKYSTONE_DUMPER_CLOSED = 1;
-    public static final double BLOCK1 = .1;
-    public static final double BLOCK2 = .2;
-    public static final double BLOCK3 = .3;
-    public static final double BLOCK4 = .4;
+    public static final double BLOCK1 = .19;
+    public static final double BLOCK2 = .27;
+    public static final double BLOCK3 = .37;
+    public static final double BLOCK4 = .44;
     public static final double [] ARMPOSITION = {DOWN, BLOCK1, BLOCK2, BLOCK3, BLOCK4};
 
     RoboPoint roboPoint = new RoboPoint();
@@ -74,8 +71,7 @@ public class Olivanie_v2_Hardware
 
         // Define and initialize servos
         claw = hwMap.servo.get("claw");
-        leftFoundation = hwMap.servo.get("left foundation");
-        rightFoundation = hwMap.servo.get("right foundation");
+        foundation = hwMap.servo.get("foundation");
         left4Bar = hwMap.servo.get("left 4 bar");
         right4Bar = hwMap.servo.get("right 4 bar");
         gate = hwMap.servo.get("gate");
@@ -208,13 +204,11 @@ public class Olivanie_v2_Hardware
     }
 
     public void closeFoundation() {
-        leftFoundation.setPosition(.6);
-        rightFoundation.setPosition(1);
+        foundation.setPosition(.6);
     }
 
     public void openFoundation() {
-        leftFoundation.setPosition(1);
-        rightFoundation.setPosition(0);
+        foundation.setPosition(1);
     }
 
     public void runCollector (double power) {
@@ -240,7 +234,7 @@ public class Olivanie_v2_Hardware
     }
 
     public void openClaw () {
-        claw.setPosition(.5);
+        claw.setPosition(.2);
     }
 
     public void closeClaw() {

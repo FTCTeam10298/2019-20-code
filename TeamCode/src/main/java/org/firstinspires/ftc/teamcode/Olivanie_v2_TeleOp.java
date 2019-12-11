@@ -33,7 +33,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 import static java.lang.Math.abs;
@@ -63,7 +62,7 @@ public class Olivanie_v2_TeleOp extends OpMode {
     double time_a       = 0;
     double dt           = 0;
 
-    double arm = 0;
+    double arm = 0.9;
 
     int height = 0;
 
@@ -163,12 +162,12 @@ public class Olivanie_v2_TeleOp extends OpMode {
             if ((frontLeftPower > 0.1 || frontRightPower > 0.1 || backLeftPower > 0.1 || backRightPower > 0.1)
                     || (frontLeftPower < -0.1 || frontRightPower < -0.1 || backLeftPower < -0.1 || backRightPower < -0.1))
             {
-                inertia += (0.6*dt);
+                inertia += (0.7*dt);
                 inertia = Range.clip(inertia, 0, 1);
             }
             else
             {
-                inertia = 0.4;
+                inertia = 0.5;
             }
 
             robot.driveSetPower(frontLeftPower*inertia, backLeftPower*inertia,
@@ -248,7 +247,7 @@ public class Olivanie_v2_TeleOp extends OpMode {
             switcher4 = true;
         }
         else if (switcher4 && !gamepad1.a && !gamepad2.a) {
-            if (robot.leftFoundation.getPosition() < 0.7f) {
+            if (robot.foundation.getPosition() < 0.7f) {
                 robot.openFoundation();
             }
             else {
@@ -259,10 +258,10 @@ public class Olivanie_v2_TeleOp extends OpMode {
 
         // Arm
         if (gamepad1.dpad_right || gamepad2.dpad_right) {
-            arm += .1 * dt;
+            arm += .2 * dt;
         }
         else if (gamepad1.dpad_left || gamepad2.dpad_left) {
-            arm -= .1 * dt;
+            arm -= .2 * dt;
         }
 
         if ((gamepad1.dpad_down || gamepad2.dpad_down) && !armChangeDown) {
@@ -284,10 +283,10 @@ public class Olivanie_v2_TeleOp extends OpMode {
         }
 
         if (height < 0) {
-            height = 4;
+            height = 4; //4
         }
         else if (height > 4) {
-            height = 0;
+            height = 0; //0
         }
 
         if (armMoving) {

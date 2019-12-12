@@ -64,7 +64,7 @@ public class Olivanie_v2_TeleOp extends OpMode {
 
     double arm = 0.9;
 
-    int height = 0;
+    int height = 5;
 
     boolean collectOtronACTIVE     = false;
     boolean collectOtronSWITCHING  = false;
@@ -282,11 +282,11 @@ public class Olivanie_v2_TeleOp extends OpMode {
             armMoving = true;
         }
 
-        if (height < 0) {
-            height = 4; //4
+        if (height < 1) {
+            height = 1; //4
         }
-        else if (height > 4) {
-            height = 0; //0
+        else if (height > 5) {
+            height = 5; //0
         }
 
         if (armMoving) {

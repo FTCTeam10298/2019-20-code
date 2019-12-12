@@ -44,7 +44,7 @@ public class Olivanie_v2_Hardware
     public static final double BLOCK2 = .27;
     public static final double BLOCK3 = .37;
     public static final double BLOCK4 = .44;
-    public static final double [] ARMPOSITION = {DOWN, BLOCK1, BLOCK2, BLOCK3, BLOCK4};
+    public static final double [] ARMPOSITION = {0, BLOCK1, BLOCK2, BLOCK3, BLOCK4, DOWN};
 
     RoboPoint roboPoint = new RoboPoint();
 
@@ -204,7 +204,7 @@ public class Olivanie_v2_Hardware
     }
 
     public void closeFoundation() {
-        foundation.setPosition(.6);
+        foundation.setPosition(0.35);
     }
 
     public void openFoundation() {
@@ -234,7 +234,7 @@ public class Olivanie_v2_Hardware
     }
 
     public void openClaw () {
-        claw.setPosition(.2);
+        claw.setPosition(.35);
     }
 
     public void closeClaw() {

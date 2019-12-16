@@ -74,8 +74,10 @@ public class Olivanie_v2_TeleOp extends OpMode {
     boolean armChangeDown = false;
     boolean armChangeUp = false;
     boolean armMoving = false;
+    boolean capstone = false;
 
-    int counter = 101;
+    double  counter = 101;
+    int state = 0;
     boolean switcher3 = false;
     boolean switcher4 = false;
 
@@ -104,6 +106,7 @@ public class Olivanie_v2_TeleOp extends OpMode {
         telemetry.addData("Inertia", "%f", inertia);
         telemetry.addData("Arm", "%f", arm);
         telemetry.addData("Height", "%d", height);
+        telemetry.addData("Capstone", capstone);
 
         // Send telemetry message to signify robot running
         telemetry.addData("Say", "N8 is the gr8est without deb8");
@@ -187,8 +190,9 @@ public class Olivanie_v2_TeleOp extends OpMode {
 
         if (gamepad1.left_bumper || gamepad2.left_bumper)
             collectOtronREVERSE = true;
-        else if (gamepad1.right_bumper || gamepad2.right_bumper)
+        else if (gamepad1.right_bumper || gamepad2.right_bumper) {
             collectOtronREVERSE = false;
+        }
 
         if (collectOtronACTIVE && !collectOtronREVERSE) {
             robot.collectorOn();
@@ -224,23 +228,36 @@ public class Olivanie_v2_TeleOp extends OpMode {
         else if (switcher3 && !gamepad1.y && !gamepad2.y) {
             if (robot.gate.getPosition() > 0.3f) {
                 counter = 0;
-                robot.gate.setPosition(robot.GATE_OPEN);
+                arm = .6;
             }
             else {
                 counter = 0;
-                robot.gate.setPosition(robot.GATE_CLOSED);
+                arm = 0.9;
             }
             switcher3 = false;
+            state++;
         }
 
-        if (counter == 5) {
+        if (counter >= .5 && state == 1) {
+            if (robot.gate.getPosition() > 0.3f) {
+                robot.gate.setPosition(robot.GATE_OPEN);
+            }
+            else {
+                robot.gate.setPosition(robot.GATE_CLOSED);
+            }
+            state++;
+        }
+
+        if (counter >= .55 && state == 2) {
             if (robot.skystoneDumper.getPosition() > .8) {
                 robot.skystoneDumper.setPosition(robot.SKYSTONE_DUMPER_OPEN);
             }
             else {
                 robot.skystoneDumper.setPosition(robot.SKYSTONE_DUMPER_CLOSED);
             }
+            state = 0;
         }
+        // End Dumper
 
         // Foundation
         if ((gamepad1.a || gamepad2.a) && !switcher4) {
@@ -255,6 +272,20 @@ public class Olivanie_v2_TeleOp extends OpMode {
             }
             switcher4 = false;
         }
+        // End Foundation
+
+        // Capstone
+        if ((gamepad1.b || gamepad2.b) && !capstone) {
+            capstone = true;
+        }
+        else if (capstone && !gamepad1.b && !gamepad2.b) {
+            if (robot.markerDumper.getPosition() > 0.3)
+                robot.markerDumper.setPosition(robot.HELD);
+            else
+                robot.markerDumper.setPosition(robot.DROPPED);
+            capstone = false;
+        }
+        // End Capstone
 
         // Arm
         if (gamepad1.dpad_right || gamepad2.dpad_right) {
@@ -280,6 +311,8 @@ public class Olivanie_v2_TeleOp extends OpMode {
             height++;
             armChangeUp = false;
             armMoving = true;
+            if (height == 5)
+                robot.openClaw();
         }
 
         if (height < 1) {
@@ -297,6 +330,6 @@ public class Olivanie_v2_TeleOp extends OpMode {
         robot.set4Bar(arm);
         // End Arm
 
-        counter++;
+        counter += dt;
     }
 }

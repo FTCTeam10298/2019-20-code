@@ -38,6 +38,26 @@ import ftclib.FtcMenu;
 import ftclib.FtcValueMenu;
 import hallib.HalDashboard;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvInternalCamera;
+import org.openftc.easyopencv.OpenCvPipeline;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static java.lang.Math.abs;
 
 @Autonomous(name="Olivanie Autonomous Linear", group ="Olivanie")
@@ -63,6 +83,12 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         ZERO,
         ONE,
         TWO
+    }
+
+    public enum SkystonePosition {
+        LEFT,
+        CENTER,
+        RIGHT
     }
 
     public enum Stones {
@@ -99,6 +125,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
     Alliance alliance = Alliance.RED;
     StartPosition startposition = StartPosition.LOADING2;
     Skystones skystones = Skystones.ONE;
+    SkystonePosition skystonePosition = SkystonePosition.CENTER;
     Stones stones = Stones.ZERO;
     Foundation foundation = Foundation.YES;
     Park park = Park.WALL;
@@ -106,13 +133,39 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
 
     /* Declare OpMode members. */
     private HalDashboard dashboard;
-    Olivanie_Hardware robot = new Olivanie_Hardware();
+    Olivanie_v2_Hardware robot = new Olivanie_v2_Hardware();
+
+    // Skystone variables
+    private ElapsedTime runtime = new ElapsedTime();
+
+    //0 means skystone, 1 means yellow stone
+    //-1 for debug, but we can keep it like this because if it works, it should change to either 0 or 255
+    private static double valMid = 0;
+    private static double valLeft = 0;
+    private static double valRight = 0;
+
+    private static float rectHeight = .6f/8f;
+    private static float rectWidth = 1.5f/8f;
+
+    private static float offsetX = 0f/8f;//changing this moves the three rects and the three circles left or right, range : (-2, 2) not inclusive
+    private static float offsetY = 0f/8f;//changing this moves the three rects and circles up or down, range: (-4, 4) not inclusive
+
+    private static float[] midPos = {4f/8f+offsetX, 4f/8f+offsetY};//0 = col, 1 = row
+    private static float[] leftPos = {2f/8f+offsetX, 4f/8f+offsetY};
+    private static float[] rightPos = {6f/8f+offsetX, 4f/8f+offsetY};
+    //moves all rectangles right or left by amount. units are in ratio to monitor
+
+    private final int rows = 640;
+    private final int cols = 480;
+
+    OpenCvCamera webcam;
+
 
     static final double COUNTS_PER_MOTOR_REV  = 28.0;      // Rev HD Hex v2.1 Motor encoder
     static final double GEARBOX_RATIO         = 20.0;      // 40 for 40:1, 20 for 20:1
-    static final double DRIVE_GEAR_REDUCTION  = 1; // This is > 1.0 if geared for torque
+    static final double DRIVE_GEAR_REDUCTION  = 1;         // This is > 1.0 if geared for torque
     static final double WHEEL_DIAMETER_INCHES = 3.937007874015748; // For figuring circumference
-    static final double DRIVETRAIN_ERROR      = 1.04;      // Error determined from testing
+    static final double DRIVETRAIN_ERROR      = 1.03;       // Error determined from testing
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * GEARBOX_RATIO * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * Math.PI) / DRIVETRAIN_ERROR;
     static final double COUNTS_PER_DEGREE     = (COUNTS_PER_INCH*0.20672)+0.003703704; // Was 0.20672; // Found by testing
@@ -129,6 +182,8 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
 
         // Run though the menu ---------------------------------------------------------------------
         doMenus();
+
+        dashboard.displayPrintf(1, "For a little bot, I pack a biiiiiig punch!");
 
 
         if (alliance == Alliance.RED) {
@@ -168,7 +223,46 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         robot.driveSetMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.driveSetTargetPosition(0, 0, 0, 0);
 
-        waitForStart();
+        /*
+         * Instantiate an OpenCvCamera object for the camera we'll be using.
+         * In this sample, we're using a webcam. Note that you will need to
+         * make sure you have added the webcam to your configuration file and
+         * adjusted the name here to match what you named it in said config file.
+         *
+         * We pass it the view that we wish to use for camera monitor (on
+         * the RC phone). If no camera monitor is desired, use the alternate
+         * single-parameter constructor instead (commented out below)
+         */
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+
+        webcam.openCameraDevice();//open camera
+        webcam.setPipeline(new opencvSkystoneDetector.StageSwitchingPipeline());//different stages
+        webcam.startStreaming(rows, cols, OpenCvCameraRotation.UPRIGHT);//display on RC
+        //width, height
+        //width = height in this case, because camera is in portrait mode.
+
+        // Sample while waiting for start
+        while (!opModeIsActive() && !isStopRequested()) {
+            telemetry.addData("Values", valLeft+"\n"+valMid+"\n"+valRight);
+            telemetry.addData("Height", rows);
+            telemetry.addData("Width", cols);
+            if (valLeft < valMid && valLeft < valRight) {
+                telemetry.addData("Skystone:", "Left");
+                skystonePosition = SkystonePosition.LEFT;
+            }
+            else if (valMid < valLeft && valMid < valRight) {
+                telemetry.addData("Skystone:", "Middle");
+                skystonePosition = SkystonePosition.CENTER;
+            }
+            else {
+                telemetry.addData("Skystone:", "Right");
+                skystonePosition = SkystonePosition.RIGHT;
+            }
+
+            telemetry.update();
+            sleep(100);
+        }
 
 
         /**
@@ -213,6 +307,12 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         if (DoTask("Drive test (72 inches)", runmode, false))
             DriveRobotPosition(.2, 72, false);
 
+        if (DoTask("Strafe test", runmode, false))
+            DriveSideways(.2, 36);
+
+        if (DoTask("Diagonal test", runmode, false))
+            DriveDiagonal(.2, 36, true);
+
         // Pause the program for the selected delay period
         sleep(delay);
 
@@ -222,6 +322,9 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         }
 
         if (DoTask("Drive", runmode, true)) {
+            robot.collectorRev();
+            sleep(500);
+            robot.collectorOff();
             if (startposition == StartPosition.BUILDING1) {
                 robot.openFoundation();
                 DriveRobotPosition(.4, -32, false);
@@ -247,59 +350,103 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                     robot.openFoundation();
                     sleep(800);
                     DriveRobotPosition(1, 10, false);
-                    DriveRobotTime(400, -1);
-                    DriveRobotPosition(.6, 40, false);
+                    if ((alliance == Alliance.RED && park == Park.WALL) ||
+                            (alliance == Alliance.BLUE && park == Park.BRIDGE)) {
+                        DriveRobotTurn(.6, -30);
+                        DriveRobotPosition(.5, 30, false);
+                    }
+                    else {
+                        DriveRobotTurn(.6, 30);
+                        DriveRobotPosition(.5, 30, false);
+                    }
+                    //DriveRobotPosition(.6, 30, false);
                 }
             }
             else if (startposition == StartPosition.LOADING1) {
                 if (foundation == Foundation.YES) {
-                    DriveRobotPosition(.5, 12, false);
-                    sleep(1000);
-                    DriveRobotPosition(.5, 12, false);
-                    if (alliance == Alliance.RED) {
-                        DriveRobotTurn(.4, 45, false);
-                    } else if (alliance == Alliance.BLUE) {
-                        DriveRobotTurn(.4, -45, false);
+                    if (skystones == Skystones.ZERO) {
+                        DriveRobotPosition(.6, 24, false);
+                        sleep(50);
+                        if (alliance == Alliance.RED) {
+                            DriveRobotTurn(.5, 45, false);
+                        } else if (alliance == Alliance.BLUE) {
+                            DriveRobotTurn(.5, -45, false);
+                        }
+                        robot.collectorOn();
+                        sleep(50);
+                        DriveRobotPosition(.5, 5, false);
+                        DriveRobotPosition(.3, 5, false);
+                        for (int i = 0; i < 4; i++) {
+                            if (!isCollectorJammed()) {
+                                sleep(50);
+                            } else {
+                                robot.collectorRev();
+                                sleep(49);
+                                robot.collectorOn();
+                            }
+                        }
+                        DriveRobotPosition(.4, -12, false);
+                        sleep(50);
+                        if (alliance == Alliance.RED) {
+                            DriveRobotTurn(.3, 45, false);
+                        } else if (alliance == Alliance.BLUE) {
+                            DriveRobotTurn(.3, -45, false);
+                        }
+                        DriveRobotPosition(.5, -36, false);
+                        if (alliance == Alliance.RED) {
+                            DriveRobotTurn(.4, 90, false);
+                        } else if (alliance == Alliance.BLUE) {
+                            DriveRobotTurn(.4, -90, false);
+                        }
+                        DriveRobotPosition(.4, -12, false);
+                        robot.openFoundation();
+                        sleep(1000);
+                        DriveRobotPosition(.4, 16, false);
+                        if (alliance == Alliance.BLUE) {
+                            DriveRobotArc(1, 20, -.6);
+                        } else if (alliance == Alliance.RED) {
+                            DriveRobotArc(1, 20, .7);
+                        }
+                        robot.openFoundation();
+                        sleep(800);
+                        DriveRobotPosition(.5, 3, false);
+                        robot.closeFoundation();
+                        sleep(800);
+                        DriveRobotTime(2500, -.3);
+                        robot.openFoundation();
+                        sleep(800);
+                        DriveRobotPosition(1, 10, false);
+                        DriveRobotTime(400, -1);
+                        DriveRobotPosition(.6, 40, false);
                     }
-                    robot.collectorOn();
-                    DriveRobotPosition(.4, 5, false);
-                    sleep(2000);
-                    DriveRobotPosition(.4, -12, false);
-                    if (alliance == Alliance.RED) {
-                        DriveRobotTurn(.3, 45, false);
-                    } else if (alliance == Alliance.BLUE) {
-                        DriveRobotTurn(.3, -45, false);
+                    else {
+
                     }
-                    DriveRobotPosition(.5, -36, false);
-                    if (alliance == Alliance.RED) {
-                        DriveRobotTurn(.4, 90, false);
-                    } else if (alliance == Alliance.BLUE) {
-                        DriveRobotTurn(.4, -90, false);
-                    }
-                    DriveRobotPosition(.4, -12, false);
-                    robot.openFoundation();
-                    sleep(1000);
-                    DriveRobotPosition(.4, 16, false);
-                    if (alliance == Alliance.BLUE) {
-                        DriveRobotArc(1, 20, -.6);
-                    } else if (alliance == Alliance.RED) {
-                        DriveRobotArc(1, 20, .7);
-                    }
-                    robot.openFoundation();
-                    sleep(800);
-                    DriveRobotPosition(.5, 3, false);
-                    robot.closeFoundation();
-                    sleep(800);
-                    DriveRobotTime(2500, -.3);
-                    robot.openFoundation();
-                    sleep(800);
-                    DriveRobotPosition(1, 10, false);
-                    DriveRobotTime(400, -1);
-                    DriveRobotPosition(.6, 40, false);
                 }
                 else {
                     DriveRobotPosition(.5, -6, false);
                 }
+            }
+            else if (startposition == StartPosition.LOADING2) {
+                DriveRobotPosition(.6, 12, false);
+                sleep(50);
+                DriveRobotTurn(.6, -90);
+                if (alliance == Alliance.BLUE) {
+                    if (skystonePosition == SkystonePosition.CENTER)
+                        DriveRobotPosition(.3, -8, false);
+                    else if (skystonePosition == SkystonePosition.LEFT)
+                        DriveRobotPosition(.3, -16, false);
+                }
+                DriveSideways(.6, -10);
+                sleep(50);
+                robot.sideClaw.setPosition(robot.GRABBED);
+                sleep(500);
+                DriveSideways(.6, 10);
+                sleep(50);
+                DriveRobotPosition(.5, -48, false);
+                robot.sideClaw.setPosition(robot.RELEASED);
+                sleep(500);
+                DriveRobotPosition(.5, 10, false);
             }
         }
 
@@ -562,6 +709,281 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         robot.setPowerAll(0);
     }
 
+    void DriveDiagonal (double power, double inches, boolean right) {
+        double position = Math.hypot(inches, inches) * COUNTS_PER_INCH;
+        if ((right && power > 0) || (!right && power < 0)) {
+            robot.leftDriveF.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.rightDriveB.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.leftDriveF.setPower(power);
+            robot.rightDriveB.setPower(power);
+            robot.leftDriveF.setTargetPosition((int) position);
+            robot.rightDriveB.setTargetPosition((int) position);
+        }
+        else {
+            robot.rightDriveF.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.leftDriveB.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.rightDriveF.setPower(power);
+            robot.leftDriveB.setPower(power);
+            robot.rightDriveF.setTargetPosition((int) position);
+            robot.leftDriveB.setTargetPosition((int) position);
+        }
+        for (int i = 0; i < 5; i++) {
+            if ((right && power > 0) || (!right && power < 0)) {
+                while ((Math.abs(robot.leftDriveF.getCurrentPosition()
+                        - robot.leftDriveF.getTargetPosition()) > 50.0) &&
+                        (Math.abs(robot.rightDriveB.getCurrentPosition()
+                                - robot.rightDriveB.getCurrentPosition()) > 50.0)) {
+                    int flDrive = robot.leftDriveF.getCurrentPosition();
+                    dashboard.displayPrintf(3, "Front left encoder: %d", flDrive);
+                }
+                while ((Math.abs(robot.rightDriveF.getCurrentPosition()
+                        - robot.rightDriveF.getTargetPosition()) > 50.0) &&
+                        (Math.abs(robot.leftDriveB.getCurrentPosition()
+                                - robot.leftDriveB.getCurrentPosition()) > 50.0)) {
+                    int frDrive = robot.rightDriveF.getCurrentPosition();
+                    dashboard.displayPrintf(3, "Front right encoder: %d", frDrive);
+                }
+            }
+            sleep(10);
+        }
+        robot.setPowerAll(0);
+    }
+
+    void DriveSideways (double power, double inches) {
+        if (inches < 0) {
+            inches *= -1;
+            power *= -1;
+        }
+        double position = -inches*COUNTS_PER_INCH;
+
+        robot.driveSetRunToPosition();
+        if (power > 0) {
+            robot.leftDriveF.setPower(power);
+            robot.rightDriveF.setPower(power);
+            robot.leftDriveB.setPower(power);
+            robot.rightDriveB.setPower(power);
+            robot.driveAddTargetPosition((int)position, (int)-position, (int)-position, (int)position);
+        }
+        else {
+            robot.leftDriveF.setPower(-power);
+            robot.rightDriveF.setPower(-power);
+            robot.leftDriveB.setPower(-power);
+            robot.rightDriveB.setPower(-power);
+            robot.driveAddTargetPosition((int)-position, (int)position, (int)position, (int)-position);
+        }
+//left
+        for (int i=0; i < 5; i++) {    // Repeat check 5 times, sleeping 10ms between,
+            // as isBusy can be a bit unreliable
+            while (robot.driveAnyReachedTarget()) {
+                int flDrive = robot.leftDriveF.getCurrentPosition();
+                int frDrive = robot.rightDriveF.getCurrentPosition();
+                int blDrive = robot.leftDriveB.getCurrentPosition();
+                int brDrive = robot.rightDriveB.getCurrentPosition();
+                dashboard.displayPrintf(3, "Front left encoder: %d", flDrive);
+                dashboard.displayPrintf(4, "Front right encoder: %d", frDrive);
+                dashboard.displayPrintf(5, "Back left encoder: %d", blDrive);
+                dashboard.displayPrintf(6, "Back right encoder %d", brDrive);
+            }
+            sleep(10);
+        }
+        robot.setPowerAll(0);
+        // Clear used section of dashboard
+        dashboard.displayText(3, "");
+        dashboard.displayText(4, "");
+        dashboard.displayText(5, "");
+        dashboard.displayText(6, "");
+        dashboard.displayText(7, "");
+    }
+
+    boolean isCollectorJammed () {
+        if (robot.leftCollector.getVelocity() < 10)
+            return true;
+        else
+            return false;
+    }
+
+    // SKYSTONE-------------------------------------------------------------------------------------
+
+
+    //detection pipeline
+    static class StageSwitchingPipeline extends OpenCvPipeline
+    {
+        Mat yCbCrChan2Mat = new Mat();
+        Mat thresholdMat = new Mat();
+        Mat all = new Mat();
+        List<MatOfPoint> contoursList = new ArrayList<>();
+
+        enum Stage
+        {//color difference. greyscale
+            detection,//includes outlines
+            THRESHOLD,//b&w
+            RAW_IMAGE,//displays raw view
+        }
+
+        private opencvSkystoneDetector.StageSwitchingPipeline.Stage stageToRenderToViewport = opencvSkystoneDetector.StageSwitchingPipeline.Stage.detection;
+        private opencvSkystoneDetector.StageSwitchingPipeline.Stage[] stages = opencvSkystoneDetector.StageSwitchingPipeline.Stage.values();
+
+        @Override
+        public void onViewportTapped()
+        {
+            /*
+             * Note that this method is invoked from the UI thread
+             * so whatever we do here, we must do quickly.
+             */
+
+            int currentStageNum = stageToRenderToViewport.ordinal();
+
+            int nextStageNum = currentStageNum + 1;
+
+            if(nextStageNum >= stages.length)
+            {
+                nextStageNum = 0;
+            }
+
+            stageToRenderToViewport = stages[nextStageNum];
+        }
+
+        @Override
+        public Mat processFrame(Mat input)
+        {
+            contoursList.clear();
+            /*
+             * This pipeline finds the contours of yellow blobs such as the Gold Mineral
+             * from the Rover Ruckus game.
+             */
+
+            //color diff cb.
+            //lower cb = more blue = skystone = white
+            //higher cb = less blue = yellow stone = grey
+            Imgproc.cvtColor(input, yCbCrChan2Mat, Imgproc.COLOR_RGB2YCrCb);//converts rgb to ycrcb
+            Core.extractChannel(yCbCrChan2Mat, yCbCrChan2Mat, 2);//takes cb difference and stores
+
+            //b&w
+            Imgproc.threshold(yCbCrChan2Mat, thresholdMat, 102, 255, Imgproc.THRESH_BINARY_INV);
+
+            //outline/contour
+            Imgproc.findContours(thresholdMat, contoursList, new Mat(), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
+            yCbCrChan2Mat.copyTo(all);//copies mat object
+            //Imgproc.drawContours(all, contoursList, -1, new Scalar(255, 0, 0), 3, 8);//draws blue contours
+
+
+            //get values from frame
+            double[] pixMid;//gets value at circle
+            double[] pixLeft;//gets value at circle
+            double[] pixRight;//gets value at circle
+            double midSum = 0;
+            double leftSum = 0;
+            double rightSum = 0;
+            for (int i = - 10; i < 10; i++) {
+                for (int j = -10; j < 10; j++) {
+                    pixMid = thresholdMat.get((int)(input.rows()* midPos[1]) + i, (int)(input.cols()* midPos[0]) + j);
+                    pixLeft = thresholdMat.get((int)(input.rows()* leftPos[1]) + i, (int)(input.cols()* leftPos[0]) + j);
+                    pixRight = thresholdMat.get((int)(input.rows()* rightPos[1]) + i, (int)(input.cols()* rightPos[0]) + j);
+                    midSum += pixMid[0];
+                    leftSum += pixLeft[0];
+                    rightSum += pixRight[0];
+                }
+            }
+
+            valMid = midSum / 400;
+            valLeft = leftSum / 400;
+            valRight = rightSum / 400;
+
+            //create three points
+            Point pointMid = new Point((int)(input.cols()* midPos[0]), (int)(input.rows()* midPos[1]));
+            Point pointLeft = new Point((int)(input.cols()* leftPos[0]), (int)(input.rows()* leftPos[1]));
+            Point pointRight = new Point((int)(input.cols()* rightPos[0]), (int)(input.rows()* rightPos[1]));
+
+            //draw circles on those points
+            Imgproc.circle(all, pointMid,10, new Scalar( 255, 0, 0 ),1 );//draws circle
+            Imgproc.circle(all, pointLeft,10, new Scalar( 255, 0, 0 ),1 );//draws circle
+            Imgproc.circle(all, pointRight,10, new Scalar( 255, 0, 0 ),1 );//draws circle
+
+            //draw 3 rectangles
+            Imgproc.rectangle(//1-3
+                    all,
+                    new Point(
+                            input.cols()*(leftPos[0])-10,
+                            input.rows()*(leftPos[1])-10),
+                    new Point(
+                            input.cols()*(leftPos[0])+10,
+                            input.rows()*(leftPos[1])+10),
+                    new Scalar(0, 255, 255), 3);
+            Imgproc.rectangle(//3-5
+                    all,
+                    new Point(
+                            input.cols()*(midPos[0])-10,
+                            input.rows()*(midPos[1])-10),
+                    new Point(
+                            input.cols()*(midPos[0])+10,
+                            input.rows()*(midPos[1])+10),
+                    new Scalar(0, 255, 255), 3);
+            Imgproc.rectangle(//5-7
+                    all,
+                    new Point(
+                            input.cols()*(rightPos[0])-10,
+                            input.rows()*(rightPos[1])-10),
+                    new Point(
+                            input.cols()*(rightPos[0])+10,
+                            input.rows()*(rightPos[1])+10),
+                    new Scalar(0, 255, 255), 3);
+
+
+            //draw 3 rectangles
+            Imgproc.rectangle(//1-3
+                    all,
+                    new Point(
+                            input.cols()*(leftPos[0]-rectWidth/2),
+                            input.rows()*(leftPos[1]-rectHeight/2)),
+                    new Point(
+                            input.cols()*(leftPos[0]+rectWidth/2),
+                            input.rows()*(leftPos[1]+rectHeight/2)),
+                    new Scalar(0, 255, 0), 3);
+            Imgproc.rectangle(//3-5
+                    all,
+                    new Point(
+                            input.cols()*(midPos[0]-rectWidth/2),
+                            input.rows()*(midPos[1]-rectHeight/2)),
+                    new Point(
+                            input.cols()*(midPos[0]+rectWidth/2),
+                            input.rows()*(midPos[1]+rectHeight/2)),
+                    new Scalar(0, 255, 0), 3);
+            Imgproc.rectangle(//5-7
+                    all,
+                    new Point(
+                            input.cols()*(rightPos[0]-rectWidth/2),
+                            input.rows()*(rightPos[1]-rectHeight/2)),
+                    new Point(
+                            input.cols()*(rightPos[0]+rectWidth/2),
+                            input.rows()*(rightPos[1]+rectHeight/2)),
+                    new Scalar(0, 255, 0), 3);
+
+            switch (stageToRenderToViewport)
+            {
+                case THRESHOLD:
+                {
+                    return thresholdMat;
+                }
+
+                case detection:
+                {
+                    return all;
+                }
+
+                case RAW_IMAGE:
+                {
+                    return input;
+                }
+
+                default:
+                {
+                    return input;
+                }
+            }
+        }
+
+    }
+
     // MENU ----------------------------------------------------------------------------------------
     @Override
     public boolean isMenuUpButton() { return gamepad1.dpad_up; }
@@ -615,7 +1037,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
             stonesMenu.addChoice("Six", Stones.SIX, false, foundationMenu);
 
         foundationMenu.addChoice("Yes", Foundation.YES, true, parkMenu);
-        foundationMenu.addChoice("1", Foundation.NO, true, parkMenu);
+        foundationMenu.addChoice("No", Foundation.NO, true, parkMenu);
 
         parkMenu.addChoice("Wall", Park.WALL, true);
         parkMenu.addChoice("Bridge", Park.BRIDGE, false);

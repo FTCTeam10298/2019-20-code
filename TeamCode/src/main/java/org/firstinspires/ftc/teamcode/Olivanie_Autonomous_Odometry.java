@@ -29,6 +29,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.Range;
@@ -39,6 +40,7 @@ import ftclib.FtcValueMenu;
 import hallib.HalDashboard;
 
 @Autonomous(name="Olivanie Autonomous Odometry", group ="Olivanie")
+@Disabled
 public class Olivanie_Autonomous_Odometry extends OpMode implements FtcMenu.MenuButtons {
 
     public enum RunMode {

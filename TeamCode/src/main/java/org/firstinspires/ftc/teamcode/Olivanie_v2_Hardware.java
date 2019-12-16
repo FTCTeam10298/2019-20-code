@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 /**
  * This is NOT an opmode.
@@ -20,7 +21,8 @@ public class Olivanie_v2_Hardware
     public DcMotor rightDriveF = null;
     public DcMotor leftDriveB = null;
     public DcMotor rightDriveB = null;
-    public DcMotor leftCollector = null;
+    public DcMotorEx leftCollector = null;
+    public DcMotor templeftCollector = null;
     public DcMotor rightCollector = null;
     public Servo claw = null;
     public Servo foundation = null;
@@ -29,21 +31,23 @@ public class Olivanie_v2_Hardware
     public Servo gate = null;
     public Servo skystoneDumper = null;
     public Servo markerDumper = null;
+    public Servo sideClaw = null;
     public ColorSensor colorSensor = null;
     public DistanceSensor distanceSensor = null;
 
-    public static final double CLOSED = 0.1;
-    public static final double OPEN = 1;
     public static final double HELD = 0;
-    public static final double DOWN = .9;
+    public static final double DROPPED = 0.7;
     public static final double GATE_OPEN = 0.05;
     public static final double GATE_CLOSED = 0.4;
-    public static final double SKYSTONE_DUMPER_OPEN = 0.6;
-    public static final double SKYSTONE_DUMPER_CLOSED = 1;
+    public static final double SKYSTONE_DUMPER_OPEN = 0.5;
+    public static final double SKYSTONE_DUMPER_CLOSED = 0.9;
+    public static final double RELEASED = .1;
+    public static final double GRABBED = .6;
     public static final double BLOCK1 = .19;
     public static final double BLOCK2 = .27;
-    public static final double BLOCK3 = .37;
+    public static final double BLOCK3 = .35;
     public static final double BLOCK4 = .44;
+    public static final double DOWN = .9;
     public static final double [] ARMPOSITION = {0, BLOCK1, BLOCK2, BLOCK3, BLOCK4, DOWN};
 
     RoboPoint roboPoint = new RoboPoint();
@@ -66,8 +70,10 @@ public class Olivanie_v2_Hardware
         rightDriveF = hwMap.dcMotor.get("right drive f");
         leftDriveB = hwMap.dcMotor.get("left drive b");
         rightDriveB = hwMap.dcMotor.get("right drive b");
-        leftCollector = hwMap.dcMotor.get("left collector");
+        templeftCollector = hwMap.dcMotor.get("left collector");
         rightCollector = hwMap.dcMotor.get("right collector");
+
+        leftCollector = (DcMotorEx)templeftCollector;
 
         // Define and initialize servos
         claw = hwMap.servo.get("claw");
@@ -77,6 +83,7 @@ public class Olivanie_v2_Hardware
         gate = hwMap.servo.get("gate");
         skystoneDumper = hwMap.servo.get("skystone dumper");
         markerDumper = hwMap.servo.get("son of brian");
+        sideClaw  = hwMap.servo.get("side claw");
 
         // Define and initialize sensors
         colorSensor = hwMap.colorSensor.get("color distance");
@@ -106,6 +113,7 @@ public class Olivanie_v2_Hardware
         gate.setPosition(GATE_CLOSED);
         skystoneDumper.setPosition(SKYSTONE_DUMPER_CLOSED);
         markerDumper.setPosition(HELD);
+        sideClaw.setPosition(RELEASED);
 
         // Set motors to use brake mode
         leftDriveF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -301,5 +309,24 @@ public class Olivanie_v2_Hardware
     {
         return leftDriveF.isBusy() && rightDriveF.isBusy() && leftDriveB.isBusy()
                 && rightDriveB.isBusy();
+    }
+
+
+    public void setPowerAll (double power) {
+        leftDriveF.setPower(power);
+        rightDriveF.setPower(power);
+        leftDriveB.setPower(power);
+        rightDriveB.setPower(power);
+    }
+
+
+    public void setPowerLeft (double power) {
+        leftDriveF.setPower(power);
+        leftDriveB.setPower(power);
+    }
+
+    public void setPowerRight (double power) {
+        rightDriveF.setPower(power);
+        rightDriveB.setPower(power);
     }
 }

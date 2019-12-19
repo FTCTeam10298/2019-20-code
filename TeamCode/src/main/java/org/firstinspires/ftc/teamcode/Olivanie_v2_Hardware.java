@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -17,10 +19,10 @@ public class Olivanie_v2_Hardware
 
 
     /* Public OpMode members. */
-    public DcMotor leftDriveF = null;
-    public DcMotor rightDriveF = null;
-    public DcMotor leftDriveB = null;
-    public DcMotor rightDriveB = null;
+    public DcMotorEx leftDriveF = null;
+    public DcMotorEx rightDriveF = null;
+    public DcMotorEx leftDriveB = null;
+    public DcMotorEx rightDriveB = null;
     public DcMotorEx leftCollector = null;
     public DcMotor templeftCollector = null;
     public DcMotor rightCollector = null;
@@ -31,24 +33,29 @@ public class Olivanie_v2_Hardware
     public Servo gate = null;
     public Servo skystoneDumper = null;
     public Servo markerDumper = null;
-    public Servo sideClaw = null;
+    public Servo leftSideClaw = null;
+    public Servo rightSideClaw = null;
+    public CRServo tapeMeasure = null;
     public ColorSensor colorSensor = null;
     public DistanceSensor distanceSensor = null;
 
-    public static final double HELD = 0;
-    public static final double DROPPED = 0.7;
+    public static final double HELD = 0.4;
+    public static final double DROPPED = 0;
     public static final double GATE_OPEN = 0.05;
     public static final double GATE_CLOSED = 0.4;
     public static final double SKYSTONE_DUMPER_OPEN = 0.5;
     public static final double SKYSTONE_DUMPER_CLOSED = 0.9;
-    public static final double RELEASED = .1;
-    public static final double GRABBED = .6;
+    public static final double RELEASEDL = .4;
+    public static final double GRABBEDL = 0;
+    public static final double RELEASEDR = 0.6;
+    public static final double GRABBEDR = 1;
     public static final double BLOCK1 = .19;
     public static final double BLOCK2 = .27;
     public static final double BLOCK3 = .35;
     public static final double BLOCK4 = .44;
     public static final double DOWN = .9;
     public static final double [] ARMPOSITION = {0, BLOCK1, BLOCK2, BLOCK3, BLOCK4, DOWN};
+    public static final double DISTANCE_BETWEEN_WHEELS = 15;
 
     RoboPoint roboPoint = new RoboPoint();
 
@@ -66,10 +73,10 @@ public class Olivanie_v2_Hardware
         hwMap = ahwMap;
 
         // Define and initialize motors
-        leftDriveF = hwMap.dcMotor.get("left drive f");
-        rightDriveF = hwMap.dcMotor.get("right drive f");
-        leftDriveB = hwMap.dcMotor.get("left drive b");
-        rightDriveB = hwMap.dcMotor.get("right drive b");
+        leftDriveF = (DcMotorEx) hwMap.dcMotor.get("left drive f");
+        rightDriveF = (DcMotorEx) hwMap.dcMotor.get("right drive f");
+        leftDriveB = (DcMotorEx) hwMap.dcMotor.get("left drive b");
+        rightDriveB = (DcMotorEx) hwMap.dcMotor.get("right drive b");
         templeftCollector = hwMap.dcMotor.get("left collector");
         rightCollector = hwMap.dcMotor.get("right collector");
 
@@ -83,17 +90,19 @@ public class Olivanie_v2_Hardware
         gate = hwMap.servo.get("gate");
         skystoneDumper = hwMap.servo.get("skystone dumper");
         markerDumper = hwMap.servo.get("son of brian");
-        sideClaw  = hwMap.servo.get("side claw");
+        leftSideClaw = hwMap.servo.get("left side claw");
+        rightSideClaw = hwMap.servo.get("right side claw");
+        tapeMeasure = hwMap.crservo.get("tape measure");
 
         // Define and initialize sensors
         colorSensor = hwMap.colorSensor.get("color distance");
         distanceSensor = hwMap.get(DistanceSensor.class, "color distance");
 
         // Set direction for all motors
-        leftDriveF.setDirection(DcMotor.Direction.REVERSE);
-        rightDriveF.setDirection(DcMotor.Direction.FORWARD);
-        leftDriveB.setDirection(DcMotor.Direction.REVERSE);
-        rightDriveB.setDirection(DcMotor.Direction.FORWARD);
+        leftDriveF.setDirection(DcMotor.Direction.FORWARD);
+        rightDriveF.setDirection(DcMotor.Direction.REVERSE);
+        leftDriveB.setDirection(DcMotor.Direction.FORWARD);
+        rightDriveB.setDirection(DcMotor.Direction.REVERSE);
 
         leftCollector.setDirection(DcMotor.Direction.FORWARD);
         rightCollector.setDirection(DcMotor.Direction.REVERSE);
@@ -113,7 +122,9 @@ public class Olivanie_v2_Hardware
         gate.setPosition(GATE_CLOSED);
         skystoneDumper.setPosition(SKYSTONE_DUMPER_CLOSED);
         markerDumper.setPosition(HELD);
-        sideClaw.setPosition(RELEASED);
+        leftSideClaw.setPosition(RELEASEDL);
+        rightSideClaw.setPosition(RELEASEDR);
+        tapeMeasure.setPower(0);
 
         // Set motors to use brake mode
         leftDriveF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -139,6 +150,16 @@ public class Olivanie_v2_Hardware
         // No encoders on these
         leftCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        // PIDF
+        leftDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
+        rightDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
+        leftDriveB.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
+        rightDriveB.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
+        leftDriveF.setPositionPIDFCoefficients(10);
+        rightDriveF.setPositionPIDFCoefficients(10);
+        leftDriveB.setPositionPIDFCoefficients(10);
+        rightDriveB.setPositionPIDFCoefficients(10);
 
 
 

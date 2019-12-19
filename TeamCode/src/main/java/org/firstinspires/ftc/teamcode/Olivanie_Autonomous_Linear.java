@@ -44,15 +44,12 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvInternalCamera;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.ArrayList;
@@ -165,10 +162,10 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
     static final double GEARBOX_RATIO         = 20.0;      // 40 for 40:1, 20 for 20:1
     static final double DRIVE_GEAR_REDUCTION  = 1;         // This is > 1.0 if geared for torque
     static final double WHEEL_DIAMETER_INCHES = 3.937007874015748; // For figuring circumference
-    static final double DRIVETRAIN_ERROR      = 1.03;       // Error determined from testing
+    static final double DRIVETRAIN_ERROR      = 1.1;       // Error determined from testing
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * GEARBOX_RATIO * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * Math.PI) / DRIVETRAIN_ERROR;
-    static final double COUNTS_PER_DEGREE     = (COUNTS_PER_INCH*0.20672)+0.003703704; // Was 0.20672; // Found by testing
+    static final double COUNTS_PER_DEGREE     = COUNTS_PER_INCH*0.173; // Found by testing
 
     @Override
     public void runOpMode() {
@@ -272,6 +269,17 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         dashboard.displayPrintf(0, "Status: Running");
 
         // For testing drive train motors and encoders
+        if (DoTask("Raw motor test", runmode, false)) {
+            robot.driveSetMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            robot.setPowerAll(.5);
+            sleep(3000);
+            robot.setPowerAll(0);
+            sleep(1000);
+            robot.setPowerAll(-.5);
+            sleep(3000);
+            robot.setPowerAll(0);
+        }
+
         if (DoTask("Chassis motor test", runmode, false)) {
             robot.driveSetMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.setPowerAll(0.5);
@@ -299,19 +307,19 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
 
 
         if (DoTask("Spin test - clockwise", runmode, false))
-            DriveRobotTurn(.2, 360 * 5);
+            DriveRobotTurn(.4, 360 * 5);
 
         if (DoTask("Spin test - counter-clockwise", runmode, false))
-            DriveRobotTurn(.2, -360 * 5);
+            DriveRobotTurn(.4, -360 * 5);
 
         if (DoTask("Drive test (72 inches)", runmode, false))
-            DriveRobotPosition(.2, 72, false);
+            DriveRobotPosition(.4, 72, false);
 
         if (DoTask("Strafe test", runmode, false))
-            DriveSideways(.2, 36);
+            DriveSideways(.4, 36);
 
         if (DoTask("Diagonal test", runmode, false))
-            DriveDiagonal(.2, 36, true);
+            DriveDiagonal(.4, 36, true);
 
         // Pause the program for the selected delay period
         sleep(delay);
@@ -439,12 +447,12 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                 }
                 DriveSideways(.6, -10);
                 sleep(50);
-                robot.sideClaw.setPosition(robot.GRABBED);
+                robot.leftSideClaw.setPosition(robot.GRABBEDL);
                 sleep(500);
                 DriveSideways(.6, 10);
                 sleep(50);
                 DriveRobotPosition(.5, -48, false);
-                robot.sideClaw.setPosition(robot.RELEASED);
+                robot.leftSideClaw.setPosition(robot.RELEASEDL);
                 sleep(500);
                 DriveRobotPosition(.5, 10, false);
             }
@@ -500,7 +508,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
     void DriveRobotPosition(double power, double inches, boolean smart_accel)
     {
         int state = 0; // 0 = NONE, 1 = ACCEL, 2 = DRIVE, 3 = DECEL
-        double position = -inches*COUNTS_PER_INCH;
+        double position = inches*COUNTS_PER_INCH;
 
         robot.driveSetRunToPosition();
 
@@ -567,7 +575,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
 
     void DriveRobotTurn (double power, double degree, boolean smart_accel)
     {
-        double position = degree*COUNTS_PER_DEGREE;
+        double position = -degree*COUNTS_PER_DEGREE;
 
         int state = 0; // 0 = NONE, 1 = ACCEL, 2 = DRIVE, 3 = DECEL
 
@@ -625,7 +633,6 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
             }
             sleep(10);
         }
-
         robot.setPowerAll(0);
         // Clear used section of dashboard 
         dashboard.displayText(3, "");
@@ -709,6 +716,20 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         robot.setPowerAll(0);
     }
 
+    void DriveArcTurn (double powerL, double powerR, double degrees) {
+        double radians = 0;
+        double l = robot.getLeftWheelEncoder();
+        double r = robot.getRightWheelEncoder();
+        robot.driveSetMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.setPowerLeft(powerL);
+        robot.setPowerRight(powerR);
+        while (Math.abs(Math.toDegrees(radians)) < Math.abs(degrees)) {
+            radians =  -((robot.getLeftWheelEncoder() - l) - (robot.getRightWheelEncoder() - r))
+                    / robot.DISTANCE_BETWEEN_WHEELS;
+        }
+        robot.setPowerAll(0);
+    }
+
     void DriveDiagonal (double power, double inches, boolean right) {
         double position = Math.hypot(inches, inches) * COUNTS_PER_INCH;
         if ((right && power > 0) || (!right && power < 0)) {
@@ -754,7 +775,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
             inches *= -1;
             power *= -1;
         }
-        double position = -inches*COUNTS_PER_INCH;
+        double position = inches*COUNTS_PER_INCH*1.1;
 
         robot.driveSetRunToPosition();
         if (power > 0) {

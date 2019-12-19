@@ -66,6 +66,13 @@ public class Olivanie_v2_TeleOp extends OpMode {
 
     int height = 5;
 
+    double tapePower = 0;
+
+    double maxVelocityFL = 0;
+    double maxVelocityFR = 0;
+    double maxVelocityBL = 0;
+    double maxVelocityBR = 0;
+
     boolean collectOtronACTIVE     = false;
     boolean collectOtronSWITCHING  = false;
     boolean collectOtronREVERSE    = false;
@@ -107,6 +114,11 @@ public class Olivanie_v2_TeleOp extends OpMode {
         telemetry.addData("Arm", "%f", arm);
         telemetry.addData("Height", "%d", height);
         telemetry.addData("Capstone", capstone);
+        telemetry.addData("Tape Power", "%f", tapePower);
+        telemetry.addData("Max Velocity FL", "%f", maxVelocityFL);
+        telemetry.addData("Max Velocity FR", "%f", maxVelocityFR);
+        telemetry.addData("Max Velocity BL", "%f", maxVelocityBL);
+        telemetry.addData("Max Velocity BR", "%f", maxVelocityBR);
 
         // Send telemetry message to signify robot running
         telemetry.addData("Say", "N8 is the gr8est without deb8");
@@ -157,10 +169,10 @@ public class Olivanie_v2_TeleOp extends OpMode {
                 maxvalue = 1;
             }
 
-            double frontLeftPower  = (-1 * Range.clip(((y - x + z) / maxvalue), -1.0, 1.0));
-            double frontRightPower = (-1 * Range.clip(((y + x - z) / maxvalue), -1.0, 1.0));
-            double backLeftPower   = (-1 * Range.clip(((y + x + z) / maxvalue), -1.0, 1.0));
-            double backRightPower  = (-1 * Range.clip(((y - x - z) / maxvalue), -1.0, 1.0));
+            double frontLeftPower  = (Range.clip(((y - x + z) / maxvalue), -1.0, 1.0));
+            double frontRightPower = (Range.clip(((y + x - z) / maxvalue), -1.0, 1.0));
+            double backLeftPower   = (Range.clip(((y + x + z) / maxvalue), -1.0, 1.0));
+            double backRightPower  = (Range.clip(((y - x - z) / maxvalue), -1.0, 1.0));
 
             if ((frontLeftPower > 0.1 || frontRightPower > 0.1 || backLeftPower > 0.1 || backRightPower > 0.1)
                     || (frontLeftPower < -0.1 || frontRightPower < -0.1 || backLeftPower < -0.1 || backRightPower < -0.1))
@@ -279,13 +291,18 @@ public class Olivanie_v2_TeleOp extends OpMode {
             capstone = true;
         }
         else if (capstone && !gamepad1.b && !gamepad2.b) {
-            if (robot.markerDumper.getPosition() > 0.3)
-                robot.markerDumper.setPosition(robot.HELD);
-            else
+            if (robot.markerDumper.getPosition() > 0.2)
                 robot.markerDumper.setPosition(robot.DROPPED);
+            else
+                robot.markerDumper.setPosition(robot.HELD);
             capstone = false;
         }
         // End Capstone
+
+        // Tape Measure
+        tapePower = Range.clip(gamepad1.right_trigger + gamepad2.right_trigger
+                - gamepad1.left_trigger - gamepad2.left_trigger, -1, 1);
+        robot.tapeMeasure.setPower(tapePower);
 
         // Arm
         if (gamepad1.dpad_right || gamepad2.dpad_right) {
@@ -329,6 +346,15 @@ public class Olivanie_v2_TeleOp extends OpMode {
 
         robot.set4Bar(arm);
         // End Arm
+
+        if (robot.leftDriveF.getVelocity() > maxVelocityFL)
+            maxVelocityFL = robot.leftDriveF.getVelocity();
+        if (robot.rightDriveF.getVelocity() > maxVelocityFR)
+            maxVelocityFR = robot.rightDriveF.getVelocity();
+        if (robot.leftDriveB.getVelocity() > maxVelocityBL)
+            maxVelocityBL = robot.leftDriveB.getVelocity();
+        if (robot.rightDriveB.getVelocity() > maxVelocityBR)
+            maxVelocityBR = robot.rightDriveB.getVelocity();
 
         counter += dt;
     }

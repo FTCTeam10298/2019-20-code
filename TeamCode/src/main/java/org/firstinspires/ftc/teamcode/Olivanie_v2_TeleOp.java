@@ -85,6 +85,7 @@ public class Olivanie_v2_TeleOp extends OpMode {
 
     double  counter = 101;
     int state = 0;
+    int state2 = 0;
     boolean switcher3 = false;
     boolean switcher4 = false;
 
@@ -241,32 +242,33 @@ public class Olivanie_v2_TeleOp extends OpMode {
             if (robot.gate.getPosition() > 0.3f) {
                 counter = 0;
                 arm = .6;
+                state++;
             }
             else {
                 counter = 0;
-                arm = 0.9;
+                robot.skystoneDumper.setPosition(robot.SKYSTONE_DUMPER_CLOSED);
+                robot.gate.setPosition(robot.GATE_CLOSED);
+                state--;
             }
             switcher3 = false;
-            state++;
         }
 
         if (counter >= .5 && state == 1) {
-            if (robot.gate.getPosition() > 0.3f) {
-                robot.gate.setPosition(robot.GATE_OPEN);
-            }
-            else {
-                robot.gate.setPosition(robot.GATE_CLOSED);
-            }
+            robot.markerDumper.setPosition(0.8);
+            robot.gate.setPosition(robot.GATE_OPEN);
             state++;
+        }
+        else if (counter >= .5 && state == -1) {
+            robot.markerDumper.setPosition(robot.HELD);
+            state--;
         }
 
         if (counter >= .55 && state == 2) {
-            if (robot.skystoneDumper.getPosition() > .8) {
-                robot.skystoneDumper.setPosition(robot.SKYSTONE_DUMPER_OPEN);
-            }
-            else {
-                robot.skystoneDumper.setPosition(robot.SKYSTONE_DUMPER_CLOSED);
-            }
+            robot.skystoneDumper.setPosition(robot.SKYSTONE_DUMPER_OPEN);
+            state = 0;
+        }
+        else if (counter >= .55 && state == -2) {
+            arm = 0.9;
             state = 0;
         }
         // End Dumper
@@ -291,18 +293,28 @@ public class Olivanie_v2_TeleOp extends OpMode {
             capstone = true;
         }
         else if (capstone && !gamepad1.b && !gamepad2.b) {
+            arm = 0.6;
+            state2 ++;
+            counter = 0;
+            capstone = false;
+        }
+        if (counter > 1 && state2 == 1) {
             if (robot.markerDumper.getPosition() > 0.2)
                 robot.markerDumper.setPosition(robot.DROPPED);
             else
                 robot.markerDumper.setPosition(robot.HELD);
-            capstone = false;
+            state2++;
+        }
+        else if (counter > 2 && state2 == 2) {
+            arm = 0.9;
+            state2 = 0;
         }
         // End Capstone
 
         // Tape Measure
         tapePower = Range.clip(gamepad1.right_trigger + gamepad2.right_trigger
                 - gamepad1.left_trigger - gamepad2.left_trigger, -1, 1);
-        robot.tapeMeasure.setPower(tapePower);
+        robot.tape.setPower(-tapePower);
 
         // Arm
         if (gamepad1.dpad_right || gamepad2.dpad_right) {

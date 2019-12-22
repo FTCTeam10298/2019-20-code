@@ -165,7 +165,9 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
     static final double DRIVETRAIN_ERROR      = 1.1;       // Error determined from testing
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * GEARBOX_RATIO * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_INCHES * Math.PI) / DRIVETRAIN_ERROR;
-    static final double COUNTS_PER_DEGREE     = COUNTS_PER_INCH*0.173; // Found by testing
+    static final double COUNTS_PER_DEGREE     = COUNTS_PER_INCH*0.184; // Found by testing
+
+    int multipier = 1;
 
     @Override
     public void runOpMode() {
@@ -184,6 +186,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
 
 
         if (alliance == Alliance.RED) {
+            multipier = -1;
             if (startposition == StartPosition.BUILDING1) {
                 if (skystones == Skystones.ZERO) {
                     if (stones == Stones.ZERO) {
@@ -234,26 +237,28 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
 
         webcam.openCameraDevice();//open camera
-        webcam.setPipeline(new opencvSkystoneDetector.StageSwitchingPipeline());//different stages
+        webcam.setPipeline(new StageSwitchingPipeline());//different stages
         webcam.startStreaming(rows, cols, OpenCvCameraRotation.UPRIGHT);//display on RC
         //width, height
         //width = height in this case, because camera is in portrait mode.
 
         // Sample while waiting for start
         while (!opModeIsActive() && !isStopRequested()) {
-            telemetry.addData("Values", valLeft+"\n"+valMid+"\n"+valRight);
-            telemetry.addData("Height", rows);
-            telemetry.addData("Width", cols);
+            dashboard.displayPrintf(3, "Left Value: (%f)", valLeft);
+            dashboard.displayPrintf(4, "Middle Value: (%f)", valMid);
+            dashboard.displayPrintf(5, "Right Value: (%f)", valRight);
+            dashboard.displayPrintf(6, "Height: ($d)", rows);
+            dashboard.displayPrintf(7, "Width: (%d)", cols);
             if (valLeft < valMid && valLeft < valRight) {
-                telemetry.addData("Skystone:", "Left");
+                dashboard.displayPrintf(9, "Skystone is LEFT");
                 skystonePosition = SkystonePosition.LEFT;
             }
             else if (valMid < valLeft && valMid < valRight) {
-                telemetry.addData("Skystone:", "Middle");
+                dashboard.displayPrintf(9, "Skystone is CENTER");
                 skystonePosition = SkystonePosition.CENTER;
             }
             else {
-                telemetry.addData("Skystone:", "Right");
+                dashboard.displayPrintf(9, "Skystone is RIGHT");
                 skystonePosition = SkystonePosition.RIGHT;
             }
 
@@ -304,7 +309,8 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                 sleep(10);
             }
         }
-
+        if (DoTask("Drive test - backwards", runmode, false))
+            DriveRobotPosition(.5, -10, false);
 
         if (DoTask("Spin test - clockwise", runmode, false))
             DriveRobotTurn(.4, 360 * 5);
@@ -315,11 +321,20 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         if (DoTask("Drive test (72 inches)", runmode, false))
             DriveRobotPosition(.4, 72, false);
 
-        if (DoTask("Strafe test", runmode, false))
-            DriveSideways(.4, 36);
+        if (DoTask("Drive test (-72 inches)", runmode, false))
+            DriveRobotPosition(.4, -72, false);
 
-        if (DoTask("Diagonal test", runmode, false))
+        if (DoTask("Strafe test", runmode, false))
+            DriveSideways(.4, 72);
+
+        if (DoTask("Strafe test -", runmode, false))
+            DriveSideways(.4, -72);
+
+        if (DoTask("Diagonal test 1", runmode, false))
             DriveDiagonal(.4, 36, true);
+
+        if (DoTask("Diagonal test 2", runmode, false))
+            DriveDiagonal(.4, 36, false);
 
         // Pause the program for the selected delay period
         sleep(delay);
@@ -375,10 +390,10 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                     if (skystones == Skystones.ZERO) {
                         DriveRobotPosition(.6, 24, false);
                         sleep(50);
-                        if (alliance == Alliance.RED) {
-                            DriveRobotTurn(.5, 45, false);
-                        } else if (alliance == Alliance.BLUE) {
+                        if (alliance == Alliance.BLUE) {
                             DriveRobotTurn(.5, -45, false);
+                        } else if (alliance == Alliance.RED) {
+                            DriveRobotTurn(.5, 45, false);
                         }
                         robot.collectorOn();
                         sleep(50);
@@ -395,25 +410,25 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                         }
                         DriveRobotPosition(.4, -12, false);
                         sleep(50);
-                        if (alliance == Alliance.RED) {
-                            DriveRobotTurn(.3, 45, false);
-                        } else if (alliance == Alliance.BLUE) {
+                        if (alliance == Alliance.BLUE) {
                             DriveRobotTurn(.3, -45, false);
+                        } else if (alliance == Alliance.RED) {
+                            DriveRobotTurn(.3, 45, false);
                         }
                         DriveRobotPosition(.5, -36, false);
-                        if (alliance == Alliance.RED) {
-                            DriveRobotTurn(.4, 90, false);
-                        } else if (alliance == Alliance.BLUE) {
+                        if (alliance == Alliance.BLUE) {
                             DriveRobotTurn(.4, -90, false);
+                        } else if (alliance == Alliance.RED) {
+                            DriveRobotTurn(.4, 90, false);
                         }
                         DriveRobotPosition(.4, -12, false);
                         robot.openFoundation();
                         sleep(1000);
                         DriveRobotPosition(.4, 16, false);
-                        if (alliance == Alliance.BLUE) {
-                            DriveRobotArc(1, 20, -.6);
-                        } else if (alliance == Alliance.RED) {
+                        if (alliance == Alliance.RED) {
                             DriveRobotArc(1, 20, .7);
+                        } else if (alliance == Alliance.BLUE) {
+                            DriveRobotArc(1, 20, -.6);
                         }
                         robot.openFoundation();
                         sleep(800);
@@ -436,25 +451,157 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                 }
             }
             else if (startposition == StartPosition.LOADING2) {
-                DriveRobotPosition(.6, 12, false);
-                sleep(50);
-                DriveRobotTurn(.6, -90);
                 if (alliance == Alliance.BLUE) {
-                    if (skystonePosition == SkystonePosition.CENTER)
-                        DriveRobotPosition(.3, -8, false);
-                    else if (skystonePosition == SkystonePosition.LEFT)
-                        DriveRobotPosition(.3, -16, false);
+                    DriveRobotPosition(.2, 2, false);
+                    sleep(500);
+                    if (skystonePosition == SkystonePosition.RIGHT)
+                        DriveDiagonal(.5, 36, true);
+                    else if (skystonePosition == SkystonePosition.CENTER) {
+                        DriveDiagonal(.5, 26, true);
+                        DriveRobotPosition(.4, 4, false);
+                    }
+                    else {
+                        DriveDiagonal(.5, 12, true);
+                        DriveRobotPosition(.4, 13, false);
+                    }
+                    sleep(500);
+                    DriveRobotPosition(.4, 4, false);
+                    sleep(250);
+                    robot.rightSideClaw.setPosition(robot.GRABBEDR);
+                    sleep(750);
+                    DriveRobotPosition(.3, -13, false);
+                    sleep(250);
+                    DriveRobotTurn(.3, -92 * multipier);
+                    sleep(250);
+                    if (skystonePosition == SkystonePosition.RIGHT)
+                        DriveRobotPosition(.4, 73, false);
+                    else if (skystonePosition == SkystonePosition.CENTER)
+                        DriveRobotPosition(.4, 65, false);
+                    else
+                        DriveRobotPosition(.4, 57, false);
+                    sleep(250);
+                    robot.rightSideClaw.setPosition(robot.RELEASEDR);
+                    sleep(750);
+                    if (skystonePosition == SkystonePosition.RIGHT)
+                        DriveRobotPosition(.4, -49, false);
+                    else if (skystonePosition == SkystonePosition.CENTER)
+                        DriveRobotPosition(.4, -40.5, false);
+                    else
+                        DriveRobotPosition(.4, -33, false);
+                    sleep(250);
+                    DriveRobotTurn(.3, 90 * multipier, false);
+                    sleep(250);
+                    DriveRobotPosition(.4, 3, false);
+                    if (skystonePosition == SkystonePosition.LEFT)
+                        DriveRobotPosition(.4, 6, false);
+                    else if (skystonePosition == SkystonePosition.CENTER)
+                        DriveRobotPosition(.4, 3, false);
+                    sleep(250);
+                    robot.rightSideClaw.setPosition(robot.GRABBEDR);
+                    sleep(750);
+                    DriveRobotPosition(.4, -8, false);
+                    sleep(250);
+                    DriveRobotTurn(.3, -92 * multipier);
+                    sleep(250);
+                    if (skystonePosition == SkystonePosition.RIGHT)
+                        DriveRobotPosition(.5, 53, false);
+                    else if (skystonePosition == SkystonePosition.CENTER)
+                        DriveRobotPosition(.5, 42, false);
+                    else
+                        DriveRobotPosition(.5, 34, false);
+                    sleep(250);
+                    robot.rightSideClaw.setPosition(robot.RELEASEDR);
+                    sleep(750);
+                    robot.tape.setPower(-.5);
+                    DriveDiagonal(.3, -10, false);
                 }
-                DriveSideways(.6, -10);
-                sleep(50);
-                robot.leftSideClaw.setPosition(robot.GRABBEDL);
-                sleep(500);
-                DriveSideways(.6, 10);
-                sleep(50);
-                DriveRobotPosition(.5, -48, false);
-                robot.leftSideClaw.setPosition(robot.RELEASEDL);
-                sleep(500);
-                DriveRobotPosition(.5, 10, false);
+                else {
+                    DriveRobotPosition(.2, 2, false);
+                    sleep(250);
+                    if (skystonePosition == SkystonePosition.RIGHT) {
+                        DriveDiagonal(.5, 12, false);
+                        DriveRobotPosition(.4, 14, false);
+                    }
+                    else if (skystonePosition == SkystonePosition.CENTER) {
+                        DriveDiagonal(.5, 26, false);
+                        DriveRobotPosition(.4, 4, false);
+                    }
+                    else {
+                        DriveDiagonal(.5, 36, false);
+                    }
+                    sleep(250);
+                    DriveRobotPosition(.4, 5, false);
+                    sleep(250);
+                    robot.leftSideClaw.setPosition(robot.GRABBEDL);
+                    sleep(750);
+                    DriveRobotPosition(.3, -17, false);
+                    sleep(250);
+                    DriveRobotTurn(.3, 92);
+                    sleep(250);
+                    if (skystonePosition == SkystonePosition.RIGHT)
+                        DriveRobotPosition(.4, 57, false);
+                    else if (skystonePosition == SkystonePosition.CENTER)
+                        DriveRobotPosition(.4, 65, false);
+                    else
+                        DriveRobotPosition(.4, 73, false);
+                    sleep(250);
+                    robot.leftSideClaw.setPosition(robot.RELEASEDL);
+                    sleep(250);
+                    if (skystonePosition == SkystonePosition.RIGHT)
+                        DriveRobotPosition(.4, -34, false);
+                    else if (skystonePosition == SkystonePosition.CENTER)
+                        DriveRobotPosition(.4, -40, false);
+                    else
+                        DriveRobotPosition(.4, -50, false);
+                    sleep(250);
+                    DriveRobotTurn(.3, -90, false);
+                    sleep(250);
+                    DriveRobotPosition(.4, 7, false);
+                    if (skystonePosition == SkystonePosition.CENTER)
+                        DriveRobotPosition(.4, 2, false);
+                    sleep(250);
+                    robot.leftSideClaw.setPosition(robot.GRABBEDL);
+                    sleep(750);
+                    DriveRobotPosition(.4, -8, false);
+                    sleep(250);
+                    DriveRobotTurn(.3, 92);
+                    sleep(250);
+                    if (skystonePosition == SkystonePosition.RIGHT)
+                        DriveRobotPosition(.5, 34, false);
+                    else if (skystonePosition == SkystonePosition.CENTER)
+                        DriveRobotPosition(.5, 42, false);
+                    else
+                        DriveRobotPosition(.5, 53, false);
+                    sleep(250);
+                    robot.leftSideClaw.setPosition(robot.RELEASEDL);
+                    sleep(750);
+                    robot.tape.setPower(-.5);
+                    sleep(1000);
+//                    DriveDiagonal(.3, -10, true);
+                }
+//                DriveRobotPosition(.6, 12, false);
+//                sleep(50);
+//                DriveRobotTurn(.6, -90);
+//                if (alliance == Alliance.BLUE) {
+//                    if (skystonePosition == SkystonePosition.CENTER)
+//                        DriveRobotPosition(.3, -8, false);
+//                    else if (skystonePosition == SkystonePosition.LEFT)
+//                        DriveRobotPosition(.3, -16, false);
+//                }
+//                DriveSideways(.6, -10);
+//                sleep(50);
+//                robot.leftSideClaw.setPosition(robot.GRABBEDL);
+//                sleep(500);
+//                DriveSideways(.6, 10);
+//                sleep(50);
+//                DriveRobotPosition(.5, -48, false);
+//                robot.leftSideClaw.setPosition(robot.RELEASEDL);
+//                sleep(500);
+//                DriveRobotPosition(.5, 10, false);
+            }
+            else if (startposition == StartPosition.BUILDING2) {
+                robot.tape.setPower(-1);
+                DriveRobotPosition(.5, -6, false);
             }
         }
 
@@ -575,7 +722,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
 
     void DriveRobotTurn (double power, double degree, boolean smart_accel)
     {
-        double position = -degree*COUNTS_PER_DEGREE;
+        double position = degree*Math.abs(COUNTS_PER_DEGREE);
 
         int state = 0; // 0 = NONE, 1 = ACCEL, 2 = DRIVE, 3 = DECEL
 
@@ -588,15 +735,14 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         }
         else
         {
-            robot.setPowerLeft(power);
-            robot.setPowerRight(-power);
+            robot.setPowerAll(Math.abs(power));
         }
 
         int flOrigTarget = robot.leftDriveF.getTargetPosition();
         int frOrigTarget = robot.rightDriveF.getTargetPosition();
         int blOrigTarget = robot.leftDriveB.getTargetPosition();
         int brOrigTarget = robot.rightDriveB.getTargetPosition();
-        robot.driveAddTargetPosition((int)position, -(int)position, (int)position, -(int)position);
+        robot.driveAddTargetPosition((int)position, (int)(-position), (int)position, (int)(-position));
 
         for (int i=0; i < 5; i++) {    // Repeat check 5 times, sleeping 10ms between,
                                        // as isBusy can be a bit unreliable
@@ -608,7 +754,9 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                 dashboard.displayPrintf(3, "Front left encoder: %d", flDrive);
                 dashboard.displayPrintf(4, "Front right encoder: %d", frDrive);
                 dashboard.displayPrintf(5, "Back left encoder: %d", blDrive);
-                dashboard.displayPrintf(6, "Back right encoder %d", brDrive);
+                dashboard.displayPrintf(6, "Back right encoder: %d", brDrive);
+                dashboard.displayPrintf(7, "Position: %d", (int)position);
+                dashboard.displayPrintf(8, "-Position: %d", (int)(-position));
 
                 // State magic
                 if (state == 1 &&
@@ -645,7 +793,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
     /** For compatibility */
     void DriveRobotTurn (double power, double degree)
     {
-        DriveRobotTurn(power, -degree, false);
+        DriveRobotTurn(power, degree, false);
     }
 
 
@@ -731,7 +879,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
     }
 
     void DriveDiagonal (double power, double inches, boolean right) {
-        double position = Math.hypot(inches, inches) * COUNTS_PER_INCH;
+        double position = Math.hypot(inches, inches) * COUNTS_PER_INCH * 1.1;
         if ((right && power > 0) || (!right && power < 0)) {
             robot.leftDriveF.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.rightDriveB.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -750,17 +898,13 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         }
         for (int i = 0; i < 5; i++) {
             if ((right && power > 0) || (!right && power < 0)) {
-                while ((Math.abs(robot.leftDriveF.getCurrentPosition()
-                        - robot.leftDriveF.getTargetPosition()) > 50.0) &&
-                        (Math.abs(robot.rightDriveB.getCurrentPosition()
-                                - robot.rightDriveB.getCurrentPosition()) > 50.0)) {
+                while (robot.driveRightAreBusy()) {
                     int flDrive = robot.leftDriveF.getCurrentPosition();
                     dashboard.displayPrintf(3, "Front left encoder: %d", flDrive);
                 }
-                while ((Math.abs(robot.rightDriveF.getCurrentPosition()
-                        - robot.rightDriveF.getTargetPosition()) > 50.0) &&
-                        (Math.abs(robot.leftDriveB.getCurrentPosition()
-                                - robot.leftDriveB.getCurrentPosition()) > 50.0)) {
+            }
+            else {
+                while (robot.driveLeftAreBusy()) {
                     int frDrive = robot.rightDriveF.getCurrentPosition();
                     dashboard.displayPrintf(3, "Front right encoder: %d", frDrive);
                 }
@@ -841,8 +985,8 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
             RAW_IMAGE,//displays raw view
         }
 
-        private opencvSkystoneDetector.StageSwitchingPipeline.Stage stageToRenderToViewport = opencvSkystoneDetector.StageSwitchingPipeline.Stage.detection;
-        private opencvSkystoneDetector.StageSwitchingPipeline.Stage[] stages = opencvSkystoneDetector.StageSwitchingPipeline.Stage.values();
+        private Stage stageToRenderToViewport = Stage.detection;
+        private Stage[] stages = Stage.values();
 
         @Override
         public void onViewportTapped()

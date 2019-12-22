@@ -26,6 +26,7 @@ public class Olivanie_v2_Hardware
     public DcMotorEx leftCollector = null;
     public DcMotor templeftCollector = null;
     public DcMotor rightCollector = null;
+    public DcMotor tape = null;
     public Servo claw = null;
     public Servo foundation = null;
     public Servo left4Bar = null;
@@ -39,7 +40,7 @@ public class Olivanie_v2_Hardware
     public ColorSensor colorSensor = null;
     public DistanceSensor distanceSensor = null;
 
-    public static final double HELD = 0.4;
+    public static final double HELD = 0.5;
     public static final double DROPPED = 0;
     public static final double GATE_OPEN = 0.05;
     public static final double GATE_CLOSED = 0.4;
@@ -79,6 +80,7 @@ public class Olivanie_v2_Hardware
         rightDriveB = (DcMotorEx) hwMap.dcMotor.get("right drive b");
         templeftCollector = hwMap.dcMotor.get("left collector");
         rightCollector = hwMap.dcMotor.get("right collector");
+        tape = hwMap.dcMotor.get("tape");
 
         leftCollector = (DcMotorEx)templeftCollector;
 
@@ -106,6 +108,7 @@ public class Olivanie_v2_Hardware
 
         leftCollector.setDirection(DcMotor.Direction.FORWARD);
         rightCollector.setDirection(DcMotor.Direction.REVERSE);
+        tape.setDirection(DcMotorSimple.Direction.FORWARD);
 
 
         // Set all motors to zero power
@@ -114,6 +117,7 @@ public class Olivanie_v2_Hardware
         leftDriveB.setPower(0);
         rightDriveB.setPower(0);
         leftCollector.setPower(0);
+        tape.setPower(0);
 
         // Set all servos to default positions
         openClaw();
@@ -131,6 +135,7 @@ public class Olivanie_v2_Hardware
         rightDriveF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftDriveB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightDriveB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        tape.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Use coast on these
         leftCollector.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -150,6 +155,7 @@ public class Olivanie_v2_Hardware
         // No encoders on these
         leftCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        tape.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // PIDF
         leftDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
@@ -284,16 +290,16 @@ public class Olivanie_v2_Hardware
 
     void driveSetRunToPosition()
     {
-        if (leftDriveF.getMode()      != DcMotor.RunMode.RUN_TO_POSITION ||
-                leftDriveB.getMode() != DcMotor.RunMode.RUN_TO_POSITION ||
-                rightDriveF.getMode()   != DcMotor.RunMode.RUN_TO_POSITION ||
-                rightDriveB.getMode()  != DcMotor.RunMode.RUN_TO_POSITION) {
+//        if (leftDriveF.getMode()      != DcMotor.RunMode.RUN_TO_POSITION ||
+//                leftDriveB.getMode() != DcMotor.RunMode.RUN_TO_POSITION ||
+//                rightDriveF.getMode()   != DcMotor.RunMode.RUN_TO_POSITION ||
+//                rightDriveB.getMode()  != DcMotor.RunMode.RUN_TO_POSITION) {
             driveSetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             driveSetMode(DcMotor.RunMode.RUN_TO_POSITION);
             // When the encoder is reset, also reset the target position, so it doesn't add an old
             // target position when using driveAddTargetPosition().
             driveSetTargetPosition(0, 0, 0, 0);
-        }
+//        }
     }
 
     /**
@@ -313,10 +319,10 @@ public class Olivanie_v2_Hardware
 
     void driveAddTargetPosition(int flPosition, int frPosition, int blPosition, int brPosition)
     {
-        leftDriveF.setTargetPosition(leftDriveF.getTargetPosition()+flPosition);
-        rightDriveF.setTargetPosition(rightDriveF.getTargetPosition()+frPosition);
-        leftDriveB.setTargetPosition(leftDriveB.getTargetPosition()+blPosition);
-        rightDriveB.setTargetPosition(rightDriveB.getTargetPosition()+brPosition);
+        leftDriveF.setTargetPosition(leftDriveF.getCurrentPosition()+flPosition);
+        rightDriveF.setTargetPosition(rightDriveF.getCurrentPosition()+frPosition);
+        leftDriveB.setTargetPosition(leftDriveB.getCurrentPosition()+blPosition);
+        rightDriveB.setTargetPosition(rightDriveB.getCurrentPosition()+brPosition);
     }
 
     boolean driveAnyReachedTarget() {
@@ -330,6 +336,16 @@ public class Olivanie_v2_Hardware
     {
         return leftDriveF.isBusy() && rightDriveF.isBusy() && leftDriveB.isBusy()
                 && rightDriveB.isBusy();
+    }
+
+    boolean driveLeftAreBusy ()
+    {
+        return rightDriveF.isBusy() && leftDriveB.isBusy();
+    }
+
+    boolean driveRightAreBusy ()
+    {
+        return leftDriveF.isBusy() && rightDriveB.isBusy();
     }
 
 

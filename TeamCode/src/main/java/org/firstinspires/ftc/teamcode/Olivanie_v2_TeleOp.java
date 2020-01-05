@@ -51,7 +51,7 @@ public class Olivanie_v2_TeleOp extends OpMode {
     /* Declare OpMode members. */
 
     // use the class created to define Olivanie's hardware
-    Olivanie_v2_Hardware robot = new Olivanie_v2_Hardware();
+    RoboMovement robot = new RoboMovement();
 
     double  x = 0;
     double  y = 0;
@@ -120,6 +120,11 @@ public class Olivanie_v2_TeleOp extends OpMode {
         telemetry.addData("Max Velocity FR", "%f", maxVelocityFR);
         telemetry.addData("Max Velocity BL", "%f", maxVelocityBL);
         telemetry.addData("Max Velocity BR", "%f", maxVelocityBR);
+        telemetry.addData("Odometry L", "%f", (double)robot.rightCollector.getCurrentPosition()/1144);
+        telemetry.addData("Odometry R", "%f", (double)robot.tape.getCurrentPosition()/1144);
+        telemetry.addData("Odometry C", "%f", (double)robot.leftCollector.getCurrentPosition()/1144);
+        telemetry.addData("Odometry R Raw", "%d", robot.tape.getCurrentPosition());
+        
 
         // Send telemetry message to signify robot running
         telemetry.addData("Say", "N8 is the gr8est without deb8");

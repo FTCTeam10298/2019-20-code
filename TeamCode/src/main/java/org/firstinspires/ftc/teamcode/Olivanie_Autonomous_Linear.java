@@ -130,7 +130,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
 
     /* Declare OpMode members. */
     private HalDashboard dashboard;
-    Olivanie_v2_Hardware robot = new Olivanie_v2_Hardware();
+    RoboMovement robot = new RoboMovement();
 
     // Skystone variables
     private ElapsedTime runtime = new ElapsedTime();
@@ -220,8 +220,9 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
 
 
         robot.driveSetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.driveSetMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.driveSetTargetPosition(0, 0, 0, 0);
+//        robot.driveSetMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.driveSetMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        robot.driveSetTargetPosition(0, 0, 0, 0);
 
         /*
          * Instantiate an OpenCvCamera object for the camera we'll be using.
@@ -274,6 +275,27 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         dashboard.displayPrintf(0, "Status: Running");
 
         // For testing drive train motors and encoders
+        if (DoTask("Odometry Test", runmode, false)) {
+            dashboard.displayPrintf(2, "%f", robot.getXPos());
+            dashboard.displayPrintf(3, "%f", robot.getYPos());
+            dashboard.displayPrintf(4, "%f", Math.toDegrees(robot.getWorldAngle_rad()) + 180);
+            RoboMovement.State current = RoboMovement.State.INIT;
+            while (current != RoboMovement.State.DONE && current != RoboMovement.State.TIMEOUT) {
+                dashboard.displayPrintf(2, "%f", robot.getXPos());
+                dashboard.displayPrintf(3, "%f", robot.getYPos());
+                dashboard.displayPrintf(4, "%f", Math.toDegrees(robot.getWorldAngle_rad()) + 180);
+                dashboard.displayPrintf(5, "%f", robot.leftDriveF.getPower());
+                dashboard.displayPrintf(6, "%f", robot.leftDriveB.getPower());
+                dashboard.displayPrintf(7, "%f", robot.rightDriveF.getPower());
+                dashboard.displayPrintf(8, "%f", robot.rightDriveB.getPower());
+                robot.updatePosition();
+                current = robot.goToPosition(new Coordinate(robot.getXPos(), robot.getYPos(),
+                                Math.toDegrees(robot.getWorldAngle_rad()) + 180), 1,
+                        new PID(.001, 0 , 0), new PID(9, 0, 0), 1,
+                        1, current);
+            }
+            robot.setSpeedAll(0, 0, 0);
+        }
         if (DoTask("Raw motor test", runmode, false)) {
             robot.driveSetMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.setPowerAll(.5);

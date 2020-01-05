@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  * This is NOT an opmode.
  * This class is used to define all the specific hardware for a single robot.
  */
-
+@Deprecated
 public class Olivanie_Hardware
 {
 

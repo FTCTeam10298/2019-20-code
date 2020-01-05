@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.util.Range;
 
 /**
  * This is NOT an opmode.
@@ -58,7 +59,11 @@ public class Olivanie_v2_Hardware
     public static final double [] ARMPOSITION = {0, BLOCK1, BLOCK2, BLOCK3, BLOCK4, DOWN};
     public static final double DISTANCE_BETWEEN_WHEELS = 15;
 
-    RoboPoint roboPoint = new RoboPoint();
+    double thetaL;
+    double thetaC;
+    double thetaR;
+
+    Global_Robot globalRobot = new Global_Robot(0, 0, 0);
 
     /* Local OpMode members. */
     HardwareMap hwMap              = null;
@@ -152,9 +157,12 @@ public class Olivanie_v2_Hardware
         leftDriveB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightDriveB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        // No encoders on these
+        // Odometry encoders on these
+        leftCollector.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightCollector.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        tape.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         tape.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // PIDF
@@ -198,34 +206,34 @@ public class Olivanie_v2_Hardware
         rightDriveB.setPower(powerRB);
     }
 
-    public void setRoboPoint (double x, double y, double angle) {
+    public void setGlobalRobot (double x, double y, double angle) {
         setX(x);
         setY(y);
         setAngle(angle);
     }
 
     public void setX (double x) {
-        roboPoint.setX(x);
+        globalRobot.setX(x);
     }
 
     public void setY (double y) {
-        roboPoint.setY(y);
+        globalRobot.setY(y);
     }
 
     public void setAngle (double angle) {
-        roboPoint.setAngle(angle);
+        globalRobot.setAngle(angle);
     }
 
     public double getXPos () {
-        return roboPoint.getX();
+        return globalRobot.getX();
     }
 
     public double getYPos () {
-        return roboPoint.getY();
+        return globalRobot.getY();
     }
 
     public double getWorldAngle_rad () {
-        return Math.toRadians(roboPoint.getAngle());
+        return globalRobot.getAngle();
     }
 
     public double getLeftWheelEncoder () {
@@ -365,5 +373,47 @@ public class Olivanie_v2_Hardware
     public void setPowerRight (double power) {
         rightDriveF.setPower(power);
         rightDriveB.setPower(power);
+    }
+
+    public void setSpeedAll (double vX, double vY, double vA) {
+        double fl = vY - vX - vA;
+        double bl = vY + vX - vA;
+        double br = vY - vX + vA;
+        double fr = vY + vX + vA;
+        double max = fl;
+        max = Math.max(max, bl);
+        max = Math.max(max, br);
+        max = Math.max(max, fr);
+        fl /= max * globalRobot.R;
+        bl /= max * globalRobot.R;
+        br /= max * globalRobot.R;
+        fr /= max * globalRobot.R;
+        fl = Range.clip(fl, -1, 1);
+        bl = Range.clip(bl, -1, 1);
+        br = Range.clip(br, -1, 1);
+        fr = Range.clip(fr, -1, 1);
+        leftDriveF.setPower(fl);
+        leftDriveB.setPower(bl);
+        rightDriveB.setPower(br);
+        rightDriveF.setPower(fr);
+    }
+
+    public void updatePosition () {
+        thetaL = ((double) rightCollector.getCurrentPosition() / 1304) - thetaL;
+        thetaC = ((double) leftCollector.getCurrentPosition() / 1304) - thetaC;
+        thetaR = ((double) tape.getCurrentPosition() / 1304) - thetaR;
+        globalRobot.updatePosition(thetaL, thetaC, thetaR);
+    }
+
+    public Coordinate getCoordinate () {
+        return globalRobot.getCoordinate();
+    }
+
+    public void grabStone () {
+
+    }
+
+    public void dropStone () {
+
     }
 }

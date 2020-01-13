@@ -59,9 +59,12 @@ public class Olivanie_v2_Hardware
     public static final double [] ARMPOSITION = {0, BLOCK1, BLOCK2, BLOCK3, BLOCK4, DOWN};
     public static final double DISTANCE_BETWEEN_WHEELS = 15;
 
-    double thetaL;
-    double thetaC;
-    double thetaR;
+    double thetaL = 0;
+    double thetaC = 0;
+    double thetaR = 0;
+    double previousL = 0;
+    double previousC = 0;
+    double previousR = 0;
 
     Global_Robot globalRobot = new Global_Robot(0, 0, 0);
 
@@ -376,10 +379,10 @@ public class Olivanie_v2_Hardware
     }
 
     public void setSpeedAll (double vX, double vY, double vA) {
-        double fl = vY - vX - vA;
-        double bl = vY + vX - vA;
-        double br = vY - vX + vA;
-        double fr = vY + vX + vA;
+        double fl = vY + vX - vA;
+        double bl = vY - vX - vA;
+        double br = vY + vX + vA;
+        double fr = vY - vX + vA;
         double max = fl;
         max = Math.max(max, bl);
         max = Math.max(max, br);
@@ -399,9 +402,16 @@ public class Olivanie_v2_Hardware
     }
 
     public void updatePosition () {
-        thetaL = ((double) rightCollector.getCurrentPosition() / 1304) - thetaL;
-        thetaC = ((double) leftCollector.getCurrentPosition() / 1304) - thetaC;
-        thetaR = ((double) tape.getCurrentPosition() / 1304) - thetaR;
+        double currentL = ((double) -rightCollector.getCurrentPosition() / 2608.0);
+        double currentC = ((double) leftCollector.getCurrentPosition() / 2608.0);
+        double currentR = ((double) -tape.getCurrentPosition() / 2608.0);
+        thetaL = currentL - previousL;
+        thetaC = currentC - previousC;
+        thetaR = currentR - previousR;
+        previousL = currentL;
+        previousC = currentC;
+        previousR = currentR;
+
         globalRobot.updatePosition(thetaL, thetaC, thetaR);
     }
 

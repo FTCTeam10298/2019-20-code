@@ -3,6 +3,7 @@ import hallib.HalDashboard;
 
 public class RoboMovement extends Olivanie_v2_Hardware{
 
+    HalDashboard dashboard = HalDashboard.getInstance();
 
     enum State {
         INIT,
@@ -32,10 +33,11 @@ public class RoboMovement extends Olivanie_v2_Hardware{
             state = State.BUSY;
         }
         else if (state == State.BUSY) {
-            Coordinate current = new Coordinate(getXPos(), getYPos(), Math.toDegrees(getWorldAngle_rad()));
+            Coordinate current = new Coordinate(globalRobot.getX(), globalRobot.getY(), Math.toDegrees(globalRobot.getAngle()));
             double distanceError = current.distance(target);
             double angleError = current.theta(target);
-            double absAngleError = Math.atan2(target.getY() - current.getY(), target.getX() - current.getX()) - getWorldAngle_rad();
+            double absAngleError = Math.atan2(target.getY() - current.getY(), target.getX() - current.getX())
+                    - getWorldAngle_rad();
             double angleMin = Math.toRadians(angleDegMin);
             if (distanceError <= distanceMin && Math.abs(angleError) <= angleMin) {
                 state = State.DONE;
@@ -45,16 +47,23 @@ public class RoboMovement extends Olivanie_v2_Hardware{
             double dx = errx * distancePID.getPropo();
             double dy = erry * distancePID.getPropo();
             double da = (angleError * anglePID.getPropo());
-            System.out.println("\n" + Math.toDegrees(current.getAngle()));
-            System.out.println(errx);
-            System.out.println(erry);
-            System.out.println(target.getY());
-            System.out.println(current.getY());
-            System.out.println(getYPos());
-            System.out.println(target.getY() - current.getY());
-            System.out.println(target.getX() - current.getX());
-            System.out.println(Math.toDegrees(absAngleError));
-            System.out.println(Math.toDegrees(angleError) + "\n");
+            dashboard = HalDashboard.getInstance();
+            dashboard.displayPrintf(5, "%f", errx);
+            dashboard.displayPrintf(6, "%f", erry);
+            dashboard.displayPrintf(7, "%f", absAngleError);
+            dashboard.displayPrintf(8, "%f", globalRobot.getY());
+            dashboard.displayPrintf(9, "%f", globalRobot.getX());
+            dashboard.displayPrintf(10, "%f", Math.toDegrees(getWorldAngle_rad()));
+//            System.out.println("\n" + Math.toDegrees(current.getAngle()));
+//            System.out.println(errx);
+//            System.out.println(erry);
+//            System.out.println(target.getY());
+//            System.out.println(current.getY());
+//            System.out.println(getYPos());
+//            System.out.println(target.getY() - current.getY());
+//            System.out.println(target.getX() - current.getX());
+//            System.out.println(Math.toDegrees(absAngleError));
+//            System.out.println(Math.toDegrees(angleError) + "\n");
 
             // I and D terms are not being currently used
 

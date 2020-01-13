@@ -284,15 +284,15 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                 dashboard.displayPrintf(2, "%f", robot.getXPos());
                 dashboard.displayPrintf(3, "%f", robot.getYPos());
                 dashboard.displayPrintf(4, "%f", Math.toDegrees(robot.getWorldAngle_rad()) + 180);
-                dashboard.displayPrintf(5, "%f", robot.leftDriveF.getPower());
-                dashboard.displayPrintf(6, "%f", robot.leftDriveB.getPower());
-                dashboard.displayPrintf(7, "%f", robot.rightDriveF.getPower());
-                dashboard.displayPrintf(8, "%f", robot.rightDriveB.getPower());
+//                dashboard.displayPrintf(5, "%f", robot.leftDriveF.getPower());
+//                dashboard.displayPrintf(6, "%f", robot.leftDriveB.getPower());
+//                dashboard.displayPrintf(7, "%f", robot.rightDriveF.getPower());
+//                dashboard.displayPrintf(8, "%f", robot.rightDriveB.getPower());
                 robot.updatePosition();
-                current = robot.goToPosition(new Coordinate(robot.getXPos(), robot.getYPos(),
-                                Math.toDegrees(robot.getWorldAngle_rad()) + 180), 1,
+                current = robot.goToPosition(new Coordinate(robot.getXPos(), robot.getYPos() + 24,
+                                Math.toDegrees(robot.getWorldAngle_rad())), .2,
                         new PID(.001, 0 , 0), new PID(9, 0, 0), 1,
-                        1, current);
+                        3, current);
             }
             robot.setSpeedAll(0, 0, 0);
         }

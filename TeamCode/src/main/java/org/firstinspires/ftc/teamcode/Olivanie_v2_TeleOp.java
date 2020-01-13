@@ -111,20 +111,23 @@ public class Olivanie_v2_TeleOp extends OpMode {
         dt = getRuntime() - time_a;
         time_a = getRuntime();
         telemetry.addData("Loop Time", "%f", dt);
-        telemetry.addData("Inertia", "%f", inertia);
         telemetry.addData("Arm", "%f", arm);
         telemetry.addData("Height", "%d", height);
         telemetry.addData("Capstone", capstone);
         telemetry.addData("Tape Power", "%f", tapePower);
-        telemetry.addData("Max Velocity FL", "%f", maxVelocityFL);
-        telemetry.addData("Max Velocity FR", "%f", maxVelocityFR);
-        telemetry.addData("Max Velocity BL", "%f", maxVelocityBL);
-        telemetry.addData("Max Velocity BR", "%f", maxVelocityBR);
-        telemetry.addData("Odometry L", "%f", (double)robot.rightCollector.getCurrentPosition()/1144);
-        telemetry.addData("Odometry R", "%f", (double)robot.tape.getCurrentPosition()/1144);
-        telemetry.addData("Odometry C", "%f", (double)robot.leftCollector.getCurrentPosition()/1144);
+
+        robot.updatePosition();
+        telemetry.addData("Odometry L", "%d", robot.rightCollector.getCurrentPosition());
+        telemetry.addData("Odometry R", "%d", robot.tape.getCurrentPosition());
+        telemetry.addData("Odometry C", "%d", robot.leftCollector.getCurrentPosition());
+        telemetry.addData("X Position", "%f", robot.getXPos());
+        telemetry.addData("Y Position", "%f", robot.getYPos());
+        telemetry.addData("Angle", "%f", Math.toDegrees(robot.getWorldAngle_rad()));
+        telemetry.addData("Theta L", "%f", robot.thetaL);
+        telemetry.addData("Theta R", "%f", robot.thetaR);
+        telemetry.addData("Theta C", "%f", robot.thetaC);
         telemetry.addData("Odometry R Raw", "%d", robot.tape.getCurrentPosition());
-        
+
 
         // Send telemetry message to signify robot running
         telemetry.addData("Say", "N8 is the gr8est without deb8");

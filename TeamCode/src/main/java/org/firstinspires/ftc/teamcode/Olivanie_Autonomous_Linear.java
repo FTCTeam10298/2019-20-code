@@ -128,6 +128,11 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
     Park park = Park.WALL;
     Auto_path path = Auto_path.PATH1;
 
+    // Order of Stones
+    int[] stoneOrderLB = {5, 2, 4, 3, 1, 0};
+    int[] stoneOrderCB = {4, 1, 5, 3, 2, 0};
+    int[] stoneOrderRB = {3, 0, 5, 4, 2, 1};
+
     /* Declare OpMode members. */
     private HalDashboard dashboard;
     RoboMovement robot = new RoboMovement();
@@ -137,6 +142,10 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
 
     //0 means skystone, 1 means yellow stone
     //-1 for debug, but we can keep it like this because if it works, it should change to either 0 or 255
+
+    double time_a       = 0;
+    double dt           = 0;
+
     private static double valMid = 0;
     private static double valLeft = 0;
     private static double valRight = 0;
@@ -219,6 +228,9 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         }
 
 
+        Coordinate target = new Coordinate();
+
+
         robot.driveSetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //        robot.driveSetMode(DcMotor.RunMode.RUN_TO_POSITION);
         robot.driveSetMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -266,6 +278,27 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
             telemetry.update();
             sleep(100);
         }
+        webcam.stopStreaming();
+        webcam.closeCameraDevice();
+
+        // different based off of alliance and skystone position
+        if (alliance == Alliance.BLUE)
+            robot.setGlobalRobot(-60, 36,0);
+        else
+            robot.setGlobalRobot(60, 36, Math.PI);
+        int[] stoneOrder = stoneOrderLB;
+        if (alliance == Alliance.BLUE && skystonePosition == SkystonePosition.CENTER) {
+            stoneOrder = stoneOrderCB;
+        }
+        else if (alliance == Alliance.BLUE && skystonePosition == SkystonePosition.RIGHT) {
+            stoneOrder = stoneOrderRB;
+        }
+        else if (alliance == Alliance.RED && skystonePosition == SkystonePosition.CENTER) {
+            stoneOrder = stoneOrderCB;
+        }
+        else if (alliance == Alliance.RED && skystonePosition == SkystonePosition.LEFT) {
+            stoneOrder = stoneOrderRB;
+        }
 
 
         /**
@@ -275,26 +308,78 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         dashboard.displayPrintf(0, "Status: Running");
 
         // For testing drive train motors and encoders
-        if (DoTask("Odometry Test", runmode, false)) {
+        if (DoTask("Odometry Test", runmode, true)) {
             dashboard.displayPrintf(2, "%f", robot.getXPos());
             dashboard.displayPrintf(3, "%f", robot.getYPos());
             dashboard.displayPrintf(4, "%f", Math.toDegrees(robot.getWorldAngle_rad()) + 180);
             RoboMovement.State current = RoboMovement.State.INIT;
-            while (current != RoboMovement.State.DONE && current != RoboMovement.State.TIMEOUT) {
-                dashboard.displayPrintf(2, "%f", robot.getXPos());
-                dashboard.displayPrintf(3, "%f", robot.getYPos());
-                dashboard.displayPrintf(4, "%f", Math.toDegrees(robot.getWorldAngle_rad()) + 180);
-//                dashboard.displayPrintf(5, "%f", robot.leftDriveF.getPower());
-//                dashboard.displayPrintf(6, "%f", robot.leftDriveB.getPower());
-//                dashboard.displayPrintf(7, "%f", robot.rightDriveF.getPower());
-//                dashboard.displayPrintf(8, "%f", robot.rightDriveB.getPower());
-                robot.updatePosition();
-                current = robot.goToPosition(new Coordinate(robot.getXPos(), robot.getYPos() + 24,
-                                Math.toDegrees(robot.getWorldAngle_rad())), .2,
-                        new PID(.001, 0 , 0), new PID(9, 0, 0), 1,
-                        3, current);
+            double y = robot.getYPos() + 72;
+//            robot.DoGoToPosition(new Coordinate(robot.getXPos(), y,
+//                            Math.toDegrees(robot.getWorldAngle_rad())), 0.2,
+////                    new PID(.001, 0 , 0), new PID(9, 0, 0), 1,
+////                    3, current);
+//            while (current != RoboMovement.State.DONE && current != RoboMovement.State.TIMEOUT) {
+//                dashboard.displayPrintf(2, "Global X: %f", robot.getXPos());
+//                dashboard.displayPrintf(3, "Global Y: %f", robot.getYPos());
+//                dashboard.displayPrintf(4, "Global Angle: %f", Math.toDegrees(robot.getWorldAngle_rad()) + 180);
+//                robot.updatePosition();
+//                current = robot.goToPosition(new Coordinate(robot.getXPos(), y,
+//                            Math.toDegrees(robot.getWorldAngle_rad())), 0.2,
+//                    new PID(.001, 0 , 0), new PID(9, 0, 0), 1,
+//                    3, current);
+//                dt = getRuntime() - time_a;
+//                time_a = getRuntime();
+//                dashboard.displayPrintf(11, "Loop Time: %f", dt);
+//            }
+
+
+//            for (int i = 0; i < stoneOrderLB.length - 4; i++){
+//                target.setCoordinate(-40 - i*2, stoneOrder[i] * 8 + 13, 0);
+//                robot.StraightGoToPosition(target, 1.3, 1);
+//                grab();
+//                target.setCoordinate(-42, 140, 0);
+//                robot.StraightGoToPosition(target, 1.3, 11);
+//                drop();
+//            }
+//            robot.setSpeedAll(0, 0, 0);
+//            target.setCoordinate(-42, 72, 0);
+//            robot.StraightGoToPosition(target, 1.3, 1);
+//            robot.setSpeedAll(0, 0, 0);
+            double angle;
+            double direction;
+            if (alliance == Alliance.RED) {
+                angle = 180;
+                direction = -1;
+            }
+            else {
+                angle = 0;
+                direction = 1;
+            }
+            for (int i = 0; i < stoneOrderLB.length - 4; i++){
+
+                if (i == 0)
+                    target.setCoordinate(-37 * direction , stoneOrder[i] * 8 + 13, angle);
+                else
+                    target.setCoordinate(-39 * direction , stoneOrder[i] * 8 + 13, -90);
+                robot.StraightGoToPosition(target, 9001, 1, this);
+                target.setCoordinate(target.getX(), target.getY(), angle);
+                robot.TurnGoToPosition(target, 2.1, 2, this);
+                grab(direction);
+                target.setCoordinate(target.getX(), target.getY(), 90);
+                robot.TurnGoToPosition(target, 2.1, 2, this);
+                target.setCoordinate(-39 * direction, 120, 90);
+                robot.StraightGoToPosition(target, 9001, 1, this);
+                target.setCoordinate(target.getX(), target.getY(), angle);
+                robot.TurnGoToPosition(target, 2.1, 2, this);
+                drop(direction);
+                target.setCoordinate(target.getX(), target.getY(), -90);
+                robot.TurnGoToPosition(target, 2.1, 2, this);
             }
             robot.setSpeedAll(0, 0, 0);
+            target.setCoordinate(-39 * direction, 72, -90);
+            robot.StraightGoToPosition(target, 9001, 1, this);
+            robot.setSpeedAll(0, 0, 0);
+            stop();
         }
         if (DoTask("Raw motor test", runmode, false)) {
             robot.driveSetMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -980,6 +1065,73 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         dashboard.displayText(5, "");
         dashboard.displayText(6, "");
         dashboard.displayText(7, "");
+    }
+
+
+    public void grab (double direction) {
+        robot.StraightGoToPosition(new Coordinate(robot.getXPos()
+                + (direction * 5), robot.getYPos(),
+                Math.toDegrees(robot.getWorldAngle_rad())), .3, 1, this);
+        if (alliance == Alliance.BLUE)
+            grabStoneR();
+        else
+            grabStoneL();
+        robot.StraightGoToPosition(new Coordinate(robot.getXPos()
+                - (direction * 4), robot.getYPos(),
+                Math.toDegrees(robot.getWorldAngle_rad())), 1.3, 1, this);
+    }
+
+    public void drop (double direction) {
+        robot.StraightGoToPosition(new Coordinate(robot.getXPos()
+                + (11 * direction), robot.getYPos(),
+                Math.toDegrees(robot.getWorldAngle_rad())), .3, 1, this);
+        if (alliance == Alliance.BLUE)
+            dropStoneR();
+        else
+            dropStoneL();
+        robot.StraightGoToPosition(new Coordinate(robot.getXPos()
+                - (6 * direction), robot.getYPos(),
+                Math.toDegrees(robot.getWorldAngle_rad())), 1.3, 1, this);
+    }
+
+    public void grabStoneR () {
+        robot.rightFinger.setPosition(robot.FINGERRELEASER);
+        sleep(500);
+        robot.rightSideClaw.setPosition(robot.GRABBEDR);
+        sleep(500);
+        robot.rightFinger.setPosition(robot.FINGERGRABBEDR);
+        sleep(500);
+        robot.rightSideClaw.setPosition(robot.RELEASEDR + .2);
+    }
+
+    public void dropStoneR () {
+        robot.rightSideClaw.setPosition(robot.GRABBEDR);
+        sleep(500);
+        robot.rightFinger.setPosition(robot.FINGERRELEASER);
+        sleep(250);
+        robot.rightSideClaw.setPosition(robot.RELEASEDR);
+        sleep(500);
+        robot.rightFinger.setPosition(robot.FINGERGRABBEDR);
+    }
+
+    public void grabStoneL () {
+        robot.leftFinger.setPosition(robot.FINGERRELEASEL);
+        sleep(500);
+        robot.leftSideClaw.setPosition(robot.GRABBEDL);
+        sleep(500);
+        robot.leftFinger.setPosition(robot.FINGERGRABBEDL);
+        sleep(500);
+        robot.leftSideClaw.setPosition(robot.RELEASEDL - .2);
+    }
+
+    public void dropStoneL () {
+        robot.leftSideClaw.setPosition(robot.GRABBEDL);
+        sleep(500);
+        robot.leftFinger.setPosition(robot.FINGERRELEASEL);
+        sleep(250);
+        robot.leftSideClaw.setPosition(robot.RELEASEDL);
+        sleep(500);
+        robot.leftFinger.setPosition(robot.FINGERGRABBEDL);
     }
 
     boolean isCollectorJammed () {

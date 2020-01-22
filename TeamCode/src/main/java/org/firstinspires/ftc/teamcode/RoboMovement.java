@@ -1,4 +1,7 @@
 package org.firstinspires.ftc.teamcode;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+
 import hallib.HalDashboard;
 
 public class RoboMovement extends Olivanie_v2_Hardware{
@@ -19,6 +22,7 @@ public class RoboMovement extends Olivanie_v2_Hardware{
     private double sumErrorA = 0;
     private double sumMaxD = 1;
     private double sumMaxA = 1;
+    Coordinate current = new Coordinate(0, 0, 0);
 
     public State goToPosition (Coordinate target, double power, PID distancePID, PID anglePID, double distanceMin,
                                double angleDegMin, State state) {
@@ -33,9 +37,11 @@ public class RoboMovement extends Olivanie_v2_Hardware{
             state = State.BUSY;
         }
         else if (state == State.BUSY) {
-            Coordinate current = new Coordinate(globalRobot.getX(), globalRobot.getY(), Math.toDegrees(globalRobot.getAngle()));
-            double distanceError = current.distance(target);
-            double angleError = current.theta(target);
+            current.setCoordinate(globalRobot.getX(), globalRobot.getY(), Math.toDegrees(globalRobot.getAngle()));
+            double distanceError = Math.hypot(current.getX() - target.getX(), current.getY() - target.getY());
+            double angleError = (target.getAngle() - current.getAngle()) % (2*Math.PI);
+            if(angleError > Math.PI)
+                angleError -= 2*Math.PI;
             double absAngleError = Math.atan2(target.getY() - current.getY(), target.getX() - current.getX())
                     - getWorldAngle_rad();
             double angleMin = Math.toRadians(angleDegMin);
@@ -48,12 +54,12 @@ public class RoboMovement extends Olivanie_v2_Hardware{
             double dy = erry * distancePID.getPropo();
             double da = (angleError * anglePID.getPropo());
             dashboard = HalDashboard.getInstance();
-            dashboard.displayPrintf(5, "%f", errx);
-            dashboard.displayPrintf(6, "%f", erry);
-            dashboard.displayPrintf(7, "%f", absAngleError);
-            dashboard.displayPrintf(8, "%f", globalRobot.getY());
-            dashboard.displayPrintf(9, "%f", globalRobot.getX());
-            dashboard.displayPrintf(10, "%f", Math.toDegrees(getWorldAngle_rad()));
+            dashboard.displayPrintf(5, "Target Robot X: %f, %f", target.getX(), errx);
+            dashboard.displayPrintf(6, "Target Robot Y: %f, %f", target.getY(), erry);
+            dashboard.displayPrintf(7, "Distance Error: %f", distanceError);
+            dashboard.displayPrintf(8, "Current X,Y,A: %f,%f,%f", current.getX(),current.getY(),Math.toDegrees(current.getAngle()));
+            dashboard.displayPrintf(9, "angleError, target: %f, %f", Math.toDegrees(angleError), Math.toDegrees(target.getAngle()));
+            dashboard.displayPrintf(10, "absAngleError: %f", Math.toDegrees(absAngleError));
 //            System.out.println("\n" + Math.toDegrees(current.getAngle()));
 //            System.out.println(errx);
 //            System.out.println(erry);
@@ -85,9 +91,7 @@ public class RoboMovement extends Olivanie_v2_Hardware{
             double newSpeedy = (dy) * power / dTotal;
             double newSpeedA = (da) * power;
 
-//            System.out.println(newSpeedx);
-//            System.out.println(newSpeedy);
-//            System.out.println(newSpeedA);
+            dashboard.displayPrintf(11, "Speedx, SpeedY, SpeedA %f,%f,%f", newSpeedx, newSpeedy, newSpeedA);
             setSpeedAll(newSpeedx, newSpeedy, newSpeedA);
         }
         else if (state == State.DONE) {
@@ -97,9 +101,9 @@ public class RoboMovement extends Olivanie_v2_Hardware{
     }
 
     public State DoGoToPosition (Coordinate target, double power, PID distancePID, PID anglePID, double distanceMin,
-                                 double angleDegMin, State state) {
+                                 double angleDegMin, State state, LinearOpMode opmodeisactive) {
         State current = state;
-        while (current != State.DONE && current != State.TIMEOUT) {
+        while (current != State.DONE && current != State.TIMEOUT && opmodeisactive.opModeIsActive()) {
             updatePosition();
             current = goToPosition(target, power, distancePID, anglePID, distanceMin,
                     angleDegMin, current);
@@ -108,32 +112,13 @@ public class RoboMovement extends Olivanie_v2_Hardware{
         return current;
     }
 
-    public void StraightGoToPosition (Coordinate target, double power, double distanceMin) {
-        DoGoToPosition(target, power, new PID(.0001, 0, 0), new PID(.01, 0, 0), distanceMin,
-                5, State.INIT);
+    public void StraightGoToPosition (Coordinate target, double power, double distanceMin, LinearOpMode opmodeisactive) {
+        DoGoToPosition(target, power, new PID(.2, 0, 0), new PID(.5, 0, 0), distanceMin,
+                5, State.INIT, opmodeisactive);
     }
 
-    public void TurnGoToPosition (Coordinate target, double power, double angleDegMin) {
-        DoGoToPosition(target, power, new PID(.001, 0 , 0), new PID(9, 0, 0), 5, angleDegMin, State.INIT);
+    public void TurnGoToPosition (Coordinate target, double power, double angleDegMin, LinearOpMode opmodeisactive) {
+        DoGoToPosition(target, power, new PID(0.01, 0 , 0), new PID(5, 0, 0), 8, angleDegMin, State.INIT, opmodeisactive);
     }
 
-    public void grab () {
-        StraightGoToPosition(new Coordinate(getCoordinate().getX()
-                + (3 * Math.cos(getCoordinate().getAngle())), getCoordinate().getY(),
-                getCoordinate().getAngle()), .1, 1);
-        grabStone();
-        StraightGoToPosition(new Coordinate(getCoordinate().getX()
-                - (3 * Math.cos(getCoordinate().getAngle())), getCoordinate().getY(),
-                getCoordinate().getAngle()), .1, 1);
-    }
-
-    public void drop () {
-        StraightGoToPosition(new Coordinate(getCoordinate().getX()
-                + (3 * Math.cos(getCoordinate().getAngle())), getCoordinate().getY(),
-                getCoordinate().getAngle()), .1, 1);
-        dropStone();
-        StraightGoToPosition(new Coordinate(getCoordinate().getX()
-                - (3 * Math.cos(getCoordinate().getAngle())), getCoordinate().getY(),
-                getCoordinate().getAngle()), .1, 1);
-    }
 }

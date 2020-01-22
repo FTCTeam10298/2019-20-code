@@ -47,7 +47,7 @@ public class Global_Robot {
         double robotX = coordinate.getX();
         double robotY = coordinate.getY();
         double robotA = coordinate.getAngle();
-        robotA += (R/(2*ynot))*(thetaL - thetaR);
+        robotA += (R/(2*ynot))*(thetaR - thetaL);
         double deltaY = (R/2)*(thetaR + thetaL);
         double deltaX = ((R)*(((xnot/(2*ynot))*(thetaR - thetaL)) + thetaC));
         robotY += deltaX * -Math.cos(robotA) + deltaY * Math.sin(robotA);
@@ -55,5 +55,7 @@ public class Global_Robot {
         coordinate.setX(robotX);
         coordinate.setY(robotY);
         coordinate.setAngle(robotA % (2 * Math.PI));
+        if (coordinate.getAngle() > Math.PI)
+            coordinate.setAngle(coordinate.getAngle() - 2*Math.PI);
     }
 }

@@ -37,20 +37,26 @@ public class Olivanie_v2_Hardware
     public Servo markerDumper = null;
     public Servo leftSideClaw = null;
     public Servo rightSideClaw = null;
+    public Servo leftFinger = null;
+    public Servo rightFinger = null;
     public CRServo tapeMeasure = null;
     public ColorSensor colorSensor = null;
     public DistanceSensor distanceSensor = null;
 
-    public static final double HELD = 0.5;
-    public static final double DROPPED = 0;
+    public static final double HELD = 0.32;
+    public static final double DROPPED = 0.04;
     public static final double GATE_OPEN = 0.05;
     public static final double GATE_CLOSED = 0.4;
     public static final double SKYSTONE_DUMPER_OPEN = 0.5;
     public static final double SKYSTONE_DUMPER_CLOSED = 0.9;
-    public static final double RELEASEDL = .4;
+    public static final double RELEASEDL = .5;
     public static final double GRABBEDL = 0;
-    public static final double RELEASEDR = 0.6;
+    public static final double RELEASEDR = 0.5;
     public static final double GRABBEDR = 1;
+    public static final double FINGERGRABBEDR = 0;
+    public static final double FINGERRELEASER = 0.4;
+    public static final double FINGERGRABBEDL = 1;
+    public static final double FINGERRELEASEL = 0.75;
     public static final double BLOCK1 = .19;
     public static final double BLOCK2 = .27;
     public static final double BLOCK3 = .35;
@@ -66,7 +72,7 @@ public class Olivanie_v2_Hardware
     double previousC = 0;
     double previousR = 0;
 
-    Global_Robot globalRobot = new Global_Robot(0, 0, 0);
+    Global_Robot globalRobot = new Global_Robot(0, 0, 180);
 
     /* Local OpMode members. */
     HardwareMap hwMap              = null;
@@ -102,6 +108,8 @@ public class Olivanie_v2_Hardware
         markerDumper = hwMap.servo.get("son of brian");
         leftSideClaw = hwMap.servo.get("left side claw");
         rightSideClaw = hwMap.servo.get("right side claw");
+        leftFinger = hwMap.servo.get("left finger");
+        rightFinger = hwMap.servo.get("right finger");
         tapeMeasure = hwMap.crservo.get("tape measure");
 
         // Define and initialize sensors
@@ -136,6 +144,8 @@ public class Olivanie_v2_Hardware
         markerDumper.setPosition(HELD);
         leftSideClaw.setPosition(RELEASEDL);
         rightSideClaw.setPosition(RELEASEDR);
+        leftFinger.setPosition(1);//open .75
+        rightFinger.setPosition(0);// open .40
         tapeMeasure.setPower(0);
 
         // Set motors to use brake mode
@@ -383,18 +393,20 @@ public class Olivanie_v2_Hardware
         double bl = vY - vX - vA;
         double br = vY + vX + vA;
         double fr = vY - vX + vA;
-        double max = fl;
-        max = Math.max(max, bl);
-        max = Math.max(max, br);
-        max = Math.max(max, fr);
-        fl /= max * globalRobot.R;
-        bl /= max * globalRobot.R;
-        br /= max * globalRobot.R;
-        fr /= max * globalRobot.R;
-        fl = Range.clip(fl, -1, 1);
-        bl = Range.clip(bl, -1, 1);
-        br = Range.clip(br, -1, 1);
-        fr = Range.clip(fr, -1, 1);
+        double max = Math.abs(fl);
+        max = Math.max(max, Math.abs(bl));
+        max = Math.max(max, Math.abs(br));
+        max = Math.max(max, Math.abs(fr));
+        if (max < 1)
+            max = 1;
+        fl /= max * globalRobot.R + 1E-6;
+        bl /= max * globalRobot.R + 1E-6;
+        br /= max * globalRobot.R + 1E-6;
+        fr /= max * globalRobot.R + 1E-6;
+        fl = Range.clip(fl * 1.3, -1, 1);
+        bl = Range.clip(bl * 1.3, -1, 1);
+        br = Range.clip(br * 1.3, -1, 1);
+        fr = Range.clip(fr * 1.3, -1, 1);
         leftDriveF.setPower(fl);
         leftDriveB.setPower(bl);
         rightDriveB.setPower(br);
@@ -403,7 +415,7 @@ public class Olivanie_v2_Hardware
 
     public void updatePosition () {
         double currentL = ((double) -rightCollector.getCurrentPosition() / 2608.0);
-        double currentC = ((double) leftCollector.getCurrentPosition() / 2608.0);
+        double currentC = ((double) leftCollector.getCurrentPosition() / 2332.0);
         double currentR = ((double) -tape.getCurrentPosition() / 2608.0);
         thetaL = currentL - previousL;
         thetaC = currentC - previousC;
@@ -419,11 +431,5 @@ public class Olivanie_v2_Hardware
         return globalRobot.getCoordinate();
     }
 
-    public void grabStone () {
 
-    }
-
-    public void dropStone () {
-
-    }
 }

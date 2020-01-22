@@ -66,7 +66,10 @@ public class Olivanie_v2_TeleOp extends OpMode {
 
     int height = 5;
 
-    double tapePower = 0;
+    double tapePower = 0;// out is .32 in is 0.04
+
+    double fingerL = 1;
+    double fingerR = 0;
 
     double maxVelocityFL = 0;
     double maxVelocityFR = 0;
@@ -127,6 +130,8 @@ public class Olivanie_v2_TeleOp extends OpMode {
         telemetry.addData("Theta R", "%f", robot.thetaR);
         telemetry.addData("Theta C", "%f", robot.thetaC);
         telemetry.addData("Odometry R Raw", "%d", robot.tape.getCurrentPosition());
+        telemetry.addData("Finger L", "%f", fingerL);
+        telemetry.addData("Finger R", "%f", fingerR);
 
 
         // Send telemetry message to signify robot running
@@ -262,12 +267,10 @@ public class Olivanie_v2_TeleOp extends OpMode {
         }
 
         if (counter >= .5 && state == 1) {
-            robot.markerDumper.setPosition(0.8);
             robot.gate.setPosition(robot.GATE_OPEN);
             state++;
         }
         else if (counter >= .5 && state == -1) {
-            robot.markerDumper.setPosition(robot.HELD);
             state--;
         }
 
@@ -301,20 +304,14 @@ public class Olivanie_v2_TeleOp extends OpMode {
             capstone = true;
         }
         else if (capstone && !gamepad1.b && !gamepad2.b) {
-            arm = 0.6;
             state2 ++;
-            counter = 0;
             capstone = false;
         }
-        if (counter > 1 && state2 == 1) {
+        if (state2 == 1) {
             if (robot.markerDumper.getPosition() > 0.2)
                 robot.markerDumper.setPosition(robot.DROPPED);
             else
                 robot.markerDumper.setPosition(robot.HELD);
-            state2++;
-        }
-        else if (counter > 2 && state2 == 2) {
-            arm = 0.9;
             state2 = 0;
         }
         // End Capstone
@@ -366,6 +363,12 @@ public class Olivanie_v2_TeleOp extends OpMode {
 
         robot.set4Bar(arm);
         // End Arm
+//
+//        // Finger Test
+//        if (gamepad1.left_stick_button)
+//            fingerR += .01;
+//        else if (gamepad1.right_stick_button)
+//            fingerR -= .01;
 
         if (robot.leftDriveF.getVelocity() > maxVelocityFL)
             maxVelocityFL = robot.leftDriveF.getVelocity();

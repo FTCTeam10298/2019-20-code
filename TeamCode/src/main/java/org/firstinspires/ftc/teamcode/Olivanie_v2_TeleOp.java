@@ -199,6 +199,13 @@ public class Olivanie_v2_TeleOp extends OpMode {
                 inertia = 0.5;
             }
 
+            if (arm < 0.5)
+                // Slow down the robot when depositing
+                inertia = 0.3;
+            else if (inertia < 0.5)
+                // Exit slow mode without waiting for inertia to build back up
+                inertia = 0.5;
+
             robot.driveSetPower(frontLeftPower*inertia, backLeftPower*inertia,
                     frontRightPower*inertia, backRightPower*inertia);
 

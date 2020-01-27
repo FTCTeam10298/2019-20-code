@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2016-19, FTC team #10298 Brain Stormz
+Copyright (c) 2016-20, FTC team #10298 Brain Stormz
 
 All rights reserved.
 
@@ -123,8 +123,8 @@ public class Olivanie_v2_TeleOp extends OpMode {
         telemetry.addData("Odometry L", "%d", robot.rightCollector.getCurrentPosition());
         telemetry.addData("Odometry R", "%d", robot.tape.getCurrentPosition());
         telemetry.addData("Odometry C", "%d", robot.leftCollector.getCurrentPosition());
-        telemetry.addData("X Position", "%f", robot.getXPos());
-        telemetry.addData("Y Position", "%f", robot.getYPos());
+        telemetry.addData("X Position", "%f", robot.getX());
+        telemetry.addData("Y Position", "%f", robot.getY());
         telemetry.addData("Angle", "%f", Math.toDegrees(robot.getWorldAngle_rad()));
         telemetry.addData("Theta L", "%f", robot.thetaL);
         telemetry.addData("Theta R", "%f", robot.thetaR);
@@ -199,7 +199,17 @@ public class Olivanie_v2_TeleOp extends OpMode {
                 inertia = 0.5;
             }
 
-            robot.driveSetPower(frontLeftPower*inertia, backLeftPower*inertia,
+        if (arm < 0.5) {
+            // Slow down the robot when depositing
+            inertia = 0.3;
+        }
+        else if (inertia < 0.5) {
+            // Exit slow mode without waiting for inertia to build back up
+            inertia = 0.5;
+        }
+
+
+        robot.driveSetPower(frontLeftPower*inertia, backLeftPower*inertia,
                     frontRightPower*inertia, backRightPower*inertia);
 
         // Collector

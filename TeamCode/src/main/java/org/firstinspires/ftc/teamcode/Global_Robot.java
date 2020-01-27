@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode;
 public class Global_Robot {
     private Coordinate coordinate;
     double R = 2.2834645669291338582677165354331; //58 mm wheel radius
-    double xnot = 1; //4 mm
-    double ynot = 14.62963389/2.0;
+    double ynot = 1; //4 mm
+    double xnot = 14.87963389/2.0;
 
     public Global_Robot(double x, double y, double a) {
         coordinate = new Coordinate(x, y, a);
@@ -43,13 +43,19 @@ public class Global_Robot {
         return "X: " + coordinate.getX() + "\nY: " + coordinate.getY() + "\nAngle: " + coordinate.getAngle();
     }
 
+    /**
+     * Update the robot's global coordinates with inputs of the change in the encoders.
+     * @param thetaL Change in the left encoder.
+     * @param thetaC Change in the center encoder.
+     * @param thetaR Change in the right encoder.
+     */
     public void updatePosition(double thetaL, double thetaC, double thetaR) {
         double robotX = coordinate.getX();
         double robotY = coordinate.getY();
         double robotA = coordinate.getAngle();
-        robotA += (R/(2*ynot))*(thetaR - thetaL);
+        robotA += (R/(2* xnot))*(thetaR - thetaL);
         double deltaY = (R/2)*(thetaR + thetaL);
-        double deltaX = ((R)*(((xnot/(2*ynot))*(thetaR - thetaL)) + thetaC));
+        double deltaX = ((R)*(((ynot /(2* xnot))*(thetaR - thetaL)) + thetaC));
         robotY += deltaX * -Math.cos(robotA) + deltaY * Math.sin(robotA);
         robotX += deltaX * Math.sin(robotA) + deltaY * Math.cos(robotA);
         coordinate.setX(robotX);

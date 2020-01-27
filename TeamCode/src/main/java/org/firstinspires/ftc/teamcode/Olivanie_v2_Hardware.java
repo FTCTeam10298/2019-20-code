@@ -237,11 +237,11 @@ public class Olivanie_v2_Hardware
         globalRobot.setAngle(angle);
     }
 
-    public double getXPos () {
+    public double getX() {
         return globalRobot.getX();
     }
 
-    public double getYPos () {
+    public double getY() {
         return globalRobot.getY();
     }
 
@@ -388,31 +388,78 @@ public class Olivanie_v2_Hardware
         rightDriveB.setPower(power);
     }
 
-    public void setSpeedAll (double vX, double vY, double vA) {
+    /**
+     * Sets the speed of the four drive motors given desired speeds in the robot's x, y, and angle.
+     * @param vX Robot speed in the x (sideways) direction.
+     * @param vY Robot speed in the y (forwards) direction.
+     * @param vA Robot speed in the angle (turning) direction.
+     * @param minPower Minimum speed allowed for the average of the four motors.
+     * @param maxPower Maximum speed allowed for the fasted of the four motors.
+     */
+    public void setSpeedAll (double vX, double vY, double vA, double minPower, double maxPower) {
+        // Calculate theoretical values for motor powers using transformation matrix
         double fl = vY + vX - vA;
         double bl = vY - vX - vA;
         double br = vY + vX + vA;
         double fr = vY - vX + vA;
+        // Find the largest magnitude of power and the average magnitude of power to scale down to
+        // maxpower and up to minpower
         double max = Math.abs(fl);
+        max = Math.max(max, Math.abs(bl));
+        max = Math.max(max, Math.abs(br));
+        max = Math.max(max, Math.abs(fr));
+        double ave = (Math.abs(fl) + Math.abs(bl) + Math.abs(br) + Math.abs(fr)) / 4;
+        if (max > maxPower) {
+            fl *= maxPower;
+            bl *= maxPower;
+            br *= maxPower;
+            fr *= maxPower;
+            fl /= max + 1E-6;
+            bl /= max + 1E-6;
+            br /= max + 1E-6;
+            fr /= max + 1E-6;
+        }
+        else if (ave < minPower) {
+            fl *= minPower;
+            bl *= minPower;
+            br *= minPower;
+            fr *= minPower;
+            fl /= max + 1E-6;
+            bl /= max + 1E-6;
+            br /= max + 1E-6;
+            fr /= max + 1E-6;
+        }
+        // Recalculate max and scale down to 1
+        max = Math.abs(fl);
         max = Math.max(max, Math.abs(bl));
         max = Math.max(max, Math.abs(br));
         max = Math.max(max, Math.abs(fr));
         if (max < 1)
             max = 1;
-        fl /= max * globalRobot.R + 1E-6;
-        bl /= max * globalRobot.R + 1E-6;
-        br /= max * globalRobot.R + 1E-6;
-        fr /= max * globalRobot.R + 1E-6;
-        fl = Range.clip(fl * 1.3, -1, 1);
-        bl = Range.clip(bl * 1.3, -1, 1);
-        br = Range.clip(br * 1.3, -1, 1);
-        fr = Range.clip(fr * 1.3, -1, 1);
+        fl /= max + 1E-6;
+        bl /= max + 1E-6;
+        br /= max + 1E-6;
+        fr /= max + 1E-6;
+        // Range clip just to be safe
+        fl = Range.clip(fl, -1, 1);
+        bl = Range.clip(bl, -1, 1);
+        br = Range.clip(br, -1, 1);
+        fr = Range.clip(fr, -1, 1);
+        // Set powers
         leftDriveF.setPower(fl);
         leftDriveB.setPower(bl);
         rightDriveB.setPower(br);
         rightDriveF.setPower(fr);
     }
 
+    public void setSpeedZero () {
+        setSpeedAll(0, 0, 0, 0, 0);
+    }
+
+    /**
+     * Updates the current position (globalRobot) of the robot based off of the change in the
+     * odometry encoders.
+     */
     public void updatePosition () {
         double currentL = ((double) -rightCollector.getCurrentPosition() / 2608.0);
         double currentC = ((double) leftCollector.getCurrentPosition() / 2332.0);
@@ -430,6 +477,4 @@ public class Olivanie_v2_Hardware
     public Coordinate getCoordinate () {
         return globalRobot.getCoordinate();
     }
-
-
 }

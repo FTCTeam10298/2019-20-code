@@ -45,6 +45,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name="Olivanie TeleOp", group="Olivanie")
 @Disabled
+@Deprecated
 public class Olivanie_TeleOp extends OpMode {
 
     /* Declare OpMode members. */

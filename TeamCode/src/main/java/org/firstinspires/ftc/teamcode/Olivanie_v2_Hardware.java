@@ -10,6 +10,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.Range;
 
+import org.openftc.revextensions2.ExpansionHubEx;
+import org.openftc.revextensions2.ExpansionHubMotor;
+import org.openftc.revextensions2.RevBulkData;
+
 /**
  * This is NOT an opmode.
  * This class is used to define all the specific hardware for a single robot.
@@ -65,12 +69,16 @@ public class Olivanie_v2_Hardware
     public static final double [] ARMPOSITION = {0, BLOCK1, BLOCK2, BLOCK3, BLOCK4, DOWN};
     public static final double DISTANCE_BETWEEN_WHEELS = 15;
 
-    double thetaL = 0;
-    double thetaC = 0;
-    double thetaR = 0;
+    double deltaL = 0;
+    double deltaC = 0;
+    double deltaR = 0;
     double previousL = 0;
     double previousC = 0;
     double previousR = 0;
+
+    RevBulkData bulkData;
+    ExpansionHubMotor lOWheel, rOWheel, cOWheel, motor3;
+    ExpansionHubEx expansionHub;
 
     Global_Robot globalRobot = new Global_Robot(0, 0, 180);
 
@@ -125,7 +133,6 @@ public class Olivanie_v2_Hardware
         leftCollector.setDirection(DcMotor.Direction.FORWARD);
         rightCollector.setDirection(DcMotor.Direction.REVERSE);
         tape.setDirection(DcMotorSimple.Direction.FORWARD);
-
 
         // Set all motors to zero power
         leftDriveF.setPower(0);
@@ -188,7 +195,12 @@ public class Olivanie_v2_Hardware
         leftDriveB.setPositionPIDFCoefficients(10);
         rightDriveB.setPositionPIDFCoefficients(10);
 
+        // Bulk Data
+        expansionHub = hwMap.get(ExpansionHubEx.class, "Expansion Hub 4");
 
+        lOWheel = (ExpansionHubMotor) hwMap.dcMotor.get("right collector");
+        rOWheel = (ExpansionHubMotor) hwMap.dcMotor.get("tape");
+        cOWheel = (ExpansionHubMotor) hwMap.dcMotor.get("left collector");
 
     }
 
@@ -247,16 +259,6 @@ public class Olivanie_v2_Hardware
 
     public double getWorldAngle_rad () {
         return globalRobot.getAngle();
-    }
-
-    public double getLeftWheelEncoder () {
-        return ((double) leftDriveF.getCurrentPosition() + (double) leftDriveB.getCurrentPosition())
-                / 2.0;
-    }
-
-    public double getRightWheelEncoder () {
-        return ((double) rightDriveF.getCurrentPosition()
-                + (double) rightDriveB.getCurrentPosition()) / 2.0;
     }
 
     public void closeFoundation() {
@@ -377,17 +379,6 @@ public class Olivanie_v2_Hardware
         rightDriveB.setPower(power);
     }
 
-
-    public void setPowerLeft (double power) {
-        leftDriveF.setPower(power);
-        leftDriveB.setPower(power);
-    }
-
-    public void setPowerRight (double power) {
-        rightDriveF.setPower(power);
-        rightDriveB.setPower(power);
-    }
-
     /**
      * Sets the speed of the four drive motors given desired speeds in the robot's x, y, and angle.
      * @param vX Robot speed in the x (sideways) direction.
@@ -446,10 +437,14 @@ public class Olivanie_v2_Hardware
         br = Range.clip(br, -1, 1);
         fr = Range.clip(fr, -1, 1);
         // Set powers
-        leftDriveF.setPower(fl);
+//        leftDriveF.setPower(fl);
+//        leftDriveB.setPower(bl);
+//        rightDriveB.setPower(br);
+//        rightDriveF.setPower(fr);
         leftDriveB.setPower(bl);
-        rightDriveB.setPower(br);
+        leftDriveF.setPower(fl);
         rightDriveF.setPower(fr);
+        rightDriveB.setPower(br);
     }
 
     public void setSpeedZero () {
@@ -461,20 +456,20 @@ public class Olivanie_v2_Hardware
      * odometry encoders.
      */
     public void updatePosition () {
-        double currentL = ((double) -rightCollector.getCurrentPosition() / 2608.0);
-        double currentC = ((double) leftCollector.getCurrentPosition() / 2332.0);
-        double currentR = ((double) -tape.getCurrentPosition() / 2608.0);
-        thetaL = currentL - previousL;
-        thetaC = currentC - previousC;
-        thetaR = currentR - previousR;
+        bulkData = expansionHub.getBulkInputData();
+//        double currentL = ((double) -rightCollector.getCurrentPosition() / 1144.0);
+//        double currentR = ((double) -tape.getCurrentPosition() / 1144.0);
+//        double currentC = ((double) leftCollector.getCurrentPosition() / 1144.0);
+        double currentL = (double) -bulkData.getMotorCurrentPosition(lOWheel) / 1144.0;
+        double currentC = (double) bulkData.getMotorCurrentPosition(cOWheel) / 1144.0;
+        double currentR = (double) -bulkData.getMotorCurrentPosition(rOWheel) / 1144.0;
+        deltaL = currentL - previousL;
+        deltaC = currentC - previousC;
+        deltaR = currentR - previousR;
         previousL = currentL;
         previousC = currentC;
         previousR = currentR;
 
-        globalRobot.updatePosition(thetaL, thetaC, thetaR);
-    }
-
-    public Coordinate getCoordinate () {
-        return globalRobot.getCoordinate();
+        globalRobot.updatePosition(deltaL, deltaC, deltaR);
     }
 }

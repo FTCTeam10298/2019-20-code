@@ -126,9 +126,9 @@ public class Olivanie_v2_TeleOp extends OpMode {
         telemetry.addData("X Position", "%f", robot.getX());
         telemetry.addData("Y Position", "%f", robot.getY());
         telemetry.addData("Angle", "%f", Math.toDegrees(robot.getWorldAngle_rad()));
-        telemetry.addData("Theta L", "%f", robot.thetaL);
-        telemetry.addData("Theta R", "%f", robot.thetaR);
-        telemetry.addData("Theta C", "%f", robot.thetaC);
+        telemetry.addData("Theta L", "%f", robot.deltaL);
+        telemetry.addData("Theta R", "%f", robot.deltaR);
+        telemetry.addData("Theta C", "%f", robot.deltaC);
         telemetry.addData("Odometry R Raw", "%d", robot.tape.getCurrentPosition());
         telemetry.addData("Finger L", "%f", fingerL);
         telemetry.addData("Finger R", "%f", fingerR);

@@ -1,67 +1,37 @@
 package org.firstinspires.ftc.teamcode;
 
-public class Global_Robot {
-    private Coordinate coordinate;
-    double R = 2.2834645669291338582677165354331; //58 mm wheel radius
-    double ynot = 1; //4 mm
-    double xnot = 14.87963389/2.0;
+public class Global_Robot extends Coordinate{
+    double ynot = 0.315; //.315
+    double xnot = 14.756661709/2.0;
 
     public Global_Robot(double x, double y, double a) {
-        coordinate = new Coordinate(x, y, a);
-    }
-
-    public Coordinate getCoordinate () {
-        return coordinate;
-    }
-
-    public void setX (double x){
-        coordinate.setX(x);
-    }
-
-    public void setY (double y) {
-        coordinate.setY(y);
-    }
-
-    public void setAngle (double a) {
-        coordinate.setAngle(a);
-    }
-
-    public double getX () {
-        return coordinate.getX();
-    }
-
-    public double getY () {
-        return coordinate.getY();
-    }
-
-    public double getAngle () {
-        return coordinate.getAngle();
+        super(x, y, a);
     }
 
     @Override
     public String toString() {
-        return "X: " + coordinate.getX() + "\nY: " + coordinate.getY() + "\nAngle: " + coordinate.getAngle();
+        return super.toString();
     }
 
     /**
      * Update the robot's global coordinates with inputs of the change in the encoders.
-     * @param thetaL Change in the left encoder.
-     * @param thetaC Change in the center encoder.
-     * @param thetaR Change in the right encoder.
+     * @param deltaL Change in the left encoder.
+     * @param deltaC Change in the center encoder.
+     * @param deltaR Change in the right encoder.
      */
-    public void updatePosition(double thetaL, double thetaC, double thetaR) {
-        double robotX = coordinate.getX();
-        double robotY = coordinate.getY();
-        double robotA = coordinate.getAngle();
-        robotA += (R/(2* xnot))*(thetaR - thetaL);
-        double deltaY = (R/2)*(thetaR + thetaL);
-        double deltaX = ((R)*(((ynot /(2* xnot))*(thetaR - thetaL)) + thetaC));
+    public void updatePosition(double deltaL, double deltaC, double deltaR) {
+        double robotX = getX();
+        double robotY = getY();
+        double robotA = getAngle();
+        robotA += (1/(2* xnot))*(deltaR - deltaL);
+        double deltaY = (.5)*(deltaR + deltaL);
+        double deltaX = (((ynot /(2* xnot))*(deltaL - deltaR)) + deltaC);
         robotY += deltaX * -Math.cos(robotA) + deltaY * Math.sin(robotA);
         robotX += deltaX * Math.sin(robotA) + deltaY * Math.cos(robotA);
-        coordinate.setX(robotX);
-        coordinate.setY(robotY);
-        coordinate.setAngle(robotA % (2 * Math.PI));
-        if (coordinate.getAngle() > Math.PI)
-            coordinate.setAngle(coordinate.getAngle() - 2*Math.PI);
+        setX(robotX);
+        setY(robotY);
+        setAngle(robotA % (2 * Math.PI));
+        if (getAngle() > Math.PI)
+            setAngle(getAngle() - 2*Math.PI);
     }
 }

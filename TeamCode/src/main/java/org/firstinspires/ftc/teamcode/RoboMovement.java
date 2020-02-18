@@ -59,7 +59,7 @@ public class RoboMovement extends Olivanie_v2_Hardware{
                 angleError -= 2*Math.PI;
             // Find the absolute angle error
             double absAngleError = Math.atan2(target.getY() - current.getY(), target.getX() - current.getX())
-                    - getWorldAngle_rad();
+                    - current.getAngle();
             // Convert the largest allowed error into radians to use in calculations
             double angleMin = Math.toRadians(angleDegMin);
             // Check to see if we've reached the desired position already
@@ -79,6 +79,7 @@ public class RoboMovement extends Olivanie_v2_Hardware{
             dashboard.displayPrintf(8, "Current X,Y,A: %f, %f, %f", current.getX(),current.getY(),Math.toDegrees(current.getAngle()));
             dashboard.displayPrintf(9, "angleError, target angle: %f, %f", Math.toDegrees(angleError), Math.toDegrees(target.getAngle()));
             dashboard.displayPrintf(10, "absAngleError: %f", Math.toDegrees(absAngleError));
+            dashboard.displayPrintf(11, "Raw L, Raw C, Raw R: %d, %d, %d", rightCollector.getCurrentPosition(), leftCollector.getCurrentPosition(), tape.getCurrentPosition());
 
             // I and D terms are not being currently used
 
@@ -101,7 +102,7 @@ public class RoboMovement extends Olivanie_v2_Hardware{
             double newSpeedy = Range.clip(dy, -3, 3);// / dTotal;
             double newSpeedA = Range.clip(da, -3, 3);
 
-            dashboard.displayPrintf(11, "Speedx, SpeedY, SpeedA %f, %f, %f", newSpeedx, newSpeedy, newSpeedA);
+            dashboard.displayPrintf(12, "Speedx, SpeedY, SpeedA %f, %f, %f", newSpeedx, newSpeedy, newSpeedA);
             setSpeedAll(newSpeedx, newSpeedy, newSpeedA, .05, maxPower);
         }
         else if (state == State.DONE) {
@@ -120,6 +121,7 @@ public class RoboMovement extends Olivanie_v2_Hardware{
                     angleDegMin, current);
         }
         setSpeedZero();
+        updatePosition();
         return current;
     }
 

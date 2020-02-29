@@ -72,8 +72,6 @@ public class Olivanie_v3_TeleOp extends OpMode {
     double fingerL = 1;
     double fingerR = 0;
 
-    double adjustorPosition = .5;
-
     double maxVelocityFL = 0;
     double maxVelocityFR = 0;
     double maxVelocityBL = 0;
@@ -107,11 +105,11 @@ public class Olivanie_v3_TeleOp extends OpMode {
         robot.init(hardwareMap);
 
         // The lift in in Run To Position
-        //robot.lift.setTargetPosition(0);
-        //robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        robot.lift.setTargetPosition(0);
+        robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         // Power up the lift. This stays powered the whole time.
-        robot.lift.setPower(0);
+        robot.lift.setPower(1);
 
         // Send telemetry message to signify robot waiting
         telemetry.addData("Say", "Robot ready");
@@ -145,8 +143,7 @@ public class Olivanie_v3_TeleOp extends OpMode {
         telemetry.addData("Theta R", "%f", robot.deltaR);
         telemetry.addData("Theta C", "%f", robot.deltaC);
         telemetry.addData("Odometry R Raw", "%d", robot.tape.getCurrentPosition());
-        telemetry.addData("Finger L", "%f", fingerL);
-        telemetry.addData("Finger R", "%f", fingerR);
+        telemetry.addData("Lift State", "%d", stateLift);
 
 
         // Send telemetry message to signify robot running

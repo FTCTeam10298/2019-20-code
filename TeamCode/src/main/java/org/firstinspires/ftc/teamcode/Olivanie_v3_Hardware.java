@@ -48,10 +48,10 @@ public class Olivanie_v3_Hardware
     public static final double FINGERRELEASER = 0.2;
     public static final double FINGERGRABBEDL = 0;
     public static final double FINGERRELEASEL = 0.8;
-    public static final int BLOCK1 = 1000;
-    public static final int BLOCK2 = 2000;
-    public static final int BLOCK3 = 3000;
-    public static final int BLOCK4 = 4000;
+    public static final int BLOCK1 = -1000;
+    public static final int BLOCK2 = -2000;
+    public static final int BLOCK3 = -3000;
+    public static final int BLOCK4 = -4000;
     public static final int [] LIFTPOSITION = {0, BLOCK1, BLOCK2, BLOCK3, BLOCK4};
 
     double deltaL = 0;

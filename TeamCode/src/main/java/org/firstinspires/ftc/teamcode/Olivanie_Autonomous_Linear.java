@@ -539,20 +539,17 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                 }
             }
             // ----------------------------These are all paths with stones--------------------------
-            else { // All paths with Stones
+            else {
                 // ------------These are all paths where our partner moves the Foundation-----------
                 if (foundation == Foundation.PARTNER) {
                     for (int i = 0; i < totalStones; i++) {
                         if (i == 0)
                             target.setCoordinate(-40 * direction , stoneOrder[i] * 8 + 13,
-                                    angle);
+                                    -90);
                         else
                             target.setCoordinate(-40 * direction , stoneOrder[i] * 8 + 13,
                                     -90);
                         robot.StraightGoToPosition(target, .5, 1,
-                                this);
-                        target.setCoordinate(target.getX(), target.getY(), angle);
-                        robot.TurnGoToPosition(target, .5, 2,
                                 this);
                         grab(direction);
                         target.setCoordinate(target.getX(), target.getY(), 90);
@@ -566,14 +563,14 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                     for (int i = 0; i < totalStones; i++){ // Cycle each stone to the unmoved
                         // Foundation
                         target.setCoordinate(-42 * direction , stoneOrder[i] * 8 + 13,
-                                      angle);
+                                      -90);
                         robot.StraightGoToPosition(target, .45, 1,
                                 this);
                         grab(direction);
                         if (foundation == Foundation.YES && i == totalStones - 1)
-                            target.setCoordinate(-45 * direction, 134, angle);
+                            target.setCoordinate(-45 * direction, 134, -90);
                         else
-                            target.setCoordinate(-45 * direction, 96, angle);
+                            target.setCoordinate(-45 * direction, 96, -90);
                         robot.StraightGoToPosition(target, .47,  1,
                                 this);
                         drop(direction);

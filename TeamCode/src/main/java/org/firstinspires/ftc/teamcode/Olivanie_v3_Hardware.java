@@ -52,7 +52,13 @@ public class Olivanie_v3_Hardware
     public static final int BLOCK2 = -2000;
     public static final int BLOCK3 = -3000;
     public static final int BLOCK4 = -4000;
-    public static final int [] LIFTPOSITION = {0, BLOCK1, BLOCK2, BLOCK3, BLOCK4};
+    public static final int BLOCK5 = -5000;
+    public static final int BLOCK6 = -6000;
+    public static final int BLOCK7 = -7000;
+    public static final int BLOCK8 = -8000;
+    public static final int BLOCK9 = -9000;
+    public static final int BLOCK10 = -10000;
+    public static final int [] LIFTPOSITION = {0, BLOCK1, BLOCK2, BLOCK3, BLOCK4, BLOCK5, BLOCK6, BLOCK7, BLOCK8, BLOCK9, BLOCK10};
 
     double deltaL = 0;
     double deltaC = 0;

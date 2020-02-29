@@ -167,14 +167,14 @@ public class Olivanie_v3_Hardware
         lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // PIDF
-        leftDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        rightDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        leftDriveB.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        rightDriveB.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        leftDriveF.setPositionPIDFCoefficients(10);
-        rightDriveF.setPositionPIDFCoefficients(10);
-        leftDriveB.setPositionPIDFCoefficients(10);
-        rightDriveB.setPositionPIDFCoefficients(10);
+        //leftDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
+        //rightDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
+        //leftDriveB.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
+        //rightDriveB.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
+        //leftDriveF.setPositionPIDFCoefficients(10);
+        //rightDriveF.setPositionPIDFCoefficients(10);
+        //leftDriveB.setPositionPIDFCoefficients(10);
+        //rightDriveB.setPositionPIDFCoefficients(10);
 
         // Bulk Data
         expansionHub = hwMap.get(ExpansionHubEx.class, "Expansion Hub 5");

@@ -1,13 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.Range;
 
 import org.openftc.revextensions2.ExpansionHubEx;
@@ -18,56 +15,44 @@ import org.openftc.revextensions2.RevBulkData;
  * This is NOT an opmode.
  * This class is used to define all the specific hardware for a single robot.
  */
-@Deprecated
-public class Olivanie_v2_Hardware
-{
 
+public class Olivanie_v3_Hardware
+{
 
     /* Public OpMode members. */
     public DcMotorEx leftDriveF = null;
     public DcMotorEx rightDriveF = null;
     public DcMotorEx leftDriveB = null;
     public DcMotorEx rightDriveB = null;
-    public DcMotorEx leftCollector = null;
-    public DcMotor templeftCollector = null;
+    public DcMotor leftCollector = null;
     public DcMotor rightCollector = null;
     public DcMotor tape = null;
+    public DcMotor lift = null;
     public Servo claw = null;
     public Servo foundation = null;
     public Servo left4Bar = null;
     public Servo right4Bar = null;
-    public Servo gate = null;
-    public Servo skystoneDumper = null;
     public Servo markerDumper = null;
     public Servo leftSideClaw = null;
     public Servo rightSideClaw = null;
     public Servo leftFinger = null;
     public Servo rightFinger = null;
-    public CRServo tapeMeasure = null;
-    public ColorSensor colorSensor = null;
-    public DistanceSensor distanceSensor = null;
 
     public static final double HELD = 0.32;
     public static final double DROPPED = 0.04;
-    public static final double GATE_OPEN = 0.05;
-    public static final double GATE_CLOSED = 0.4;
-    public static final double SKYSTONE_DUMPER_OPEN = 0.5;
-    public static final double SKYSTONE_DUMPER_CLOSED = 0.9;
-    public static final double RELEASEDL = .5;
-    public static final double GRABBEDL = 0;
-    public static final double RELEASEDR = 0.5;
-    public static final double GRABBEDR = 1;
-    public static final double FINGERGRABBEDR = 0;
-    public static final double FINGERRELEASER = 0.4;
-    public static final double FINGERGRABBEDL = 1;
-    public static final double FINGERRELEASEL = 0.75;
-    public static final double BLOCK1 = .19;
-    public static final double BLOCK2 = .27;
-    public static final double BLOCK3 = .35;
-    public static final double BLOCK4 = .44;
-    public static final double DOWN = .9;
-    public static final double [] ARMPOSITION = {0, BLOCK1, BLOCK2, BLOCK3, BLOCK4, DOWN};
-    public static final double DISTANCE_BETWEEN_WHEELS = 15;
+    public static final double RELEASEDL = 0;
+    public static final double GRABBEDL = 1;
+    public static final double RELEASEDR = 1;
+    public static final double GRABBEDR = 0;
+    public static final double FINGERGRABBEDR = 1;
+    public static final double FINGERRELEASER = 0.2;
+    public static final double FINGERGRABBEDL = 0;
+    public static final double FINGERRELEASEL = 0.8;
+    public static final int BLOCK1 = 1000;
+    public static final int BLOCK2 = 2000;
+    public static final int BLOCK3 = 3000;
+    public static final int BLOCK4 = 4000;
+    public static final int [] LIFTPOSITION = {0, BLOCK1, BLOCK2, BLOCK3, BLOCK4};
 
     double deltaL = 0;
     double deltaC = 0;
@@ -86,7 +71,7 @@ public class Olivanie_v2_Hardware
     HardwareMap hwMap              = null;
 
     /* Constructor */
-    public Olivanie_v2_Hardware() {
+    public Olivanie_v3_Hardware() {
 
     }
 
@@ -100,39 +85,34 @@ public class Olivanie_v2_Hardware
         rightDriveF = (DcMotorEx) hwMap.dcMotor.get("right drive f");
         leftDriveB = (DcMotorEx) hwMap.dcMotor.get("left drive b");
         rightDriveB = (DcMotorEx) hwMap.dcMotor.get("right drive b");
-        templeftCollector = hwMap.dcMotor.get("left collector");
+        leftCollector = hwMap.dcMotor.get("left collector");
         rightCollector = hwMap.dcMotor.get("right collector");
         tape = hwMap.dcMotor.get("tape");
-
-        leftCollector = (DcMotorEx)templeftCollector;
+        lift = hwMap.dcMotor.get("lift");
 
         // Define and initialize servos
         claw = hwMap.servo.get("claw");
         foundation = hwMap.servo.get("foundation");
         left4Bar = hwMap.servo.get("left 4 bar");
         right4Bar = hwMap.servo.get("right 4 bar");
-        gate = hwMap.servo.get("gate");
-        skystoneDumper = hwMap.servo.get("skystone dumper");
         markerDumper = hwMap.servo.get("son of brian");
         leftSideClaw = hwMap.servo.get("left side claw");
         rightSideClaw = hwMap.servo.get("right side claw");
         leftFinger = hwMap.servo.get("left finger");
         rightFinger = hwMap.servo.get("right finger");
-        tapeMeasure = hwMap.crservo.get("tape measure");
 
         // Define and initialize sensors
-        colorSensor = hwMap.colorSensor.get("color distance");
-        distanceSensor = hwMap.get(DistanceSensor.class, "color distance");
 
         // Set direction for all motors
-        leftDriveF.setDirection(DcMotor.Direction.FORWARD);
-        rightDriveF.setDirection(DcMotor.Direction.REVERSE);
-        leftDriveB.setDirection(DcMotor.Direction.FORWARD);
-        rightDriveB.setDirection(DcMotor.Direction.REVERSE);
+        leftDriveF.setDirection(DcMotor.Direction.REVERSE);
+        rightDriveF.setDirection(DcMotor.Direction.FORWARD);
+        leftDriveB.setDirection(DcMotor.Direction.REVERSE);
+        rightDriveB.setDirection(DcMotor.Direction.FORWARD);
 
         leftCollector.setDirection(DcMotor.Direction.FORWARD);
         rightCollector.setDirection(DcMotor.Direction.REVERSE);
         tape.setDirection(DcMotorSimple.Direction.FORWARD);
+        lift.setDirection(DcMotor.Direction.FORWARD);
 
         // Set all motors to zero power
         leftDriveF.setPower(0);
@@ -141,19 +121,17 @@ public class Olivanie_v2_Hardware
         rightDriveB.setPower(0);
         leftCollector.setPower(0);
         tape.setPower(0);
+        lift.setPower(0);
 
         // Set all servos to default positions
         openClaw();
         openFoundation();
-        set4Bar(DOWN);
-        gate.setPosition(GATE_CLOSED);
-        skystoneDumper.setPosition(SKYSTONE_DUMPER_CLOSED);
+        close4Bar();
         markerDumper.setPosition(HELD);
         leftSideClaw.setPosition(RELEASEDL);
         rightSideClaw.setPosition(RELEASEDR);
-        leftFinger.setPosition(1);//open .75
-        rightFinger.setPosition(0);// open .40
-        tapeMeasure.setPower(0);
+        leftFinger.setPosition(FINGERRELEASEL);
+        rightFinger.setPosition(FINGERRELEASER);
 
         // Set motors to use brake mode
         leftDriveF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -161,29 +139,32 @@ public class Olivanie_v2_Hardware
         leftDriveB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightDriveB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         tape.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Use coast on these
         leftCollector.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightCollector.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
-        leftDriveF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightDriveF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftDriveB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightDriveB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        // Stop and reset the encoders on the necessary motors
+        tape.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        // Set motors to run with encoders
-        leftDriveF.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightDriveF.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftDriveB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightDriveB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        // Set drive motors to run with encoders
+        leftDriveF.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightDriveF.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftDriveB.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightDriveB.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Odometry encoders on these
         leftCollector.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightCollector.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightCollector.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         tape.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         tape.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftDriveB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftDriveB.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        // Lift uses encoder
+        lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // PIDF
         leftDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
@@ -196,26 +177,17 @@ public class Olivanie_v2_Hardware
         rightDriveB.setPositionPIDFCoefficients(10);
 
         // Bulk Data
-        expansionHub = hwMap.get(ExpansionHubEx.class, "Expansion Hub 4");
+        expansionHub = hwMap.get(ExpansionHubEx.class, "Expansion Hub 5");
 
-        lOWheel = (ExpansionHubMotor) hwMap.dcMotor.get("right collector");
-        rOWheel = (ExpansionHubMotor) hwMap.dcMotor.get("tape");
-        cOWheel = (ExpansionHubMotor) hwMap.dcMotor.get("left collector");
+        lOWheel = (ExpansionHubMotor) hwMap.dcMotor.get("left collector");
+        cOWheel = (ExpansionHubMotor) hwMap.dcMotor.get("tape");
+        rOWheel = (ExpansionHubMotor) hwMap.dcMotor.get("left drive b");
 
     }
 
     /**
      * FUNCTIONS
      */
-
-    /**
-     * driveSetPowerAll sets all of the drive train motors to the specified power level.
-     * @param power Power level to set all motors to
-     */
-    public void driveSetPowerAll (double power)
-    {
-        driveSetPower(power, power, power, power);
-    }
 
     /**
      * driveSetPower sets all of the drive train motors to the specified power levels.
@@ -262,11 +234,11 @@ public class Olivanie_v2_Hardware
     }
 
     public void closeFoundation() {
-        foundation.setPosition(0.35);
+        foundation.setPosition(1);
     }
 
     public void openFoundation() {
-        foundation.setPosition(1);
+        foundation.setPosition(0.35);
     }
 
     public void runCollector (double power) {
@@ -274,27 +246,60 @@ public class Olivanie_v2_Hardware
         rightCollector.setPower(power);
     }
 
+    /**
+     * Turns on the collector.
+     */
     public void collectorOn () {
         runCollector(-1);
     }
 
+    /**
+     * Turns off the collector.
+     */
     public void collectorOff () {
         runCollector(0);
     }
 
+    /**
+     * Reverses the collector.
+     */
     public void  collectorRev () {
         runCollector(1);
     }
 
+    /**
+     * Sets the position of the 4 bar.
+     * @param position The desired position for the left servo. The right one then mirrors it.
+     */
     public void set4Bar (double position) {
         left4Bar.setPosition(position);
         right4Bar.setPosition(1 - position);
     }
 
+    /**
+     * Swings the 4 bar in to grab a stone
+     */
+    public void close4Bar () {
+        set4Bar(0);
+    }
+
+    /**
+     * Swings the 4 bar out to place a stone.
+     */
+    public void place4Bar () {
+        set4Bar(1);
+    }
+
+    /**
+     * Opens the claw to place a stone.
+     */
     public void openClaw () {
         claw.setPosition(.35);
     }
 
+    /**
+     * Closes the claw to pick up a stone.
+     */
     public void closeClaw() {
         claw.setPosition(1);
     }
@@ -309,74 +314,6 @@ public class Olivanie_v2_Hardware
         rightDriveF.setMode(runmode);
         leftDriveB.setMode(runmode);
         rightDriveB.setMode(runmode);
-    }
-
-    void driveSetRunToPosition()
-    {
-//        if (leftDriveF.getMode()      != DcMotor.RunMode.RUN_TO_POSITION ||
-//                leftDriveB.getMode() != DcMotor.RunMode.RUN_TO_POSITION ||
-//                rightDriveF.getMode()   != DcMotor.RunMode.RUN_TO_POSITION ||
-//                rightDriveB.getMode()  != DcMotor.RunMode.RUN_TO_POSITION) {
-            driveSetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            driveSetMode(DcMotor.RunMode.RUN_TO_POSITION);
-            // When the encoder is reset, also reset the target position, so it doesn't add an old
-            // target position when using driveAddTargetPosition().
-            driveSetTargetPosition(0, 0, 0, 0);
-//        }
-    }
-
-    /**
-     * driveSetTargetPosition sets all of the drive train motors to the specified positions.
-     * @param flPosition Position to set front left motor to run to
-     * @param frPosition Position to set front right motor to run to
-     * @param blPosition Position to set back left motor to run to
-     * @param brPosition Position to set back right motor to run to
-     */
-    void driveSetTargetPosition(int flPosition, int frPosition, int blPosition, int brPosition)
-    {
-        leftDriveF.setTargetPosition(flPosition);
-        rightDriveF.setTargetPosition(frPosition);
-        leftDriveB.setTargetPosition(blPosition);
-        rightDriveB.setTargetPosition(brPosition);
-    }
-
-    void driveAddTargetPosition(int flPosition, int frPosition, int blPosition, int brPosition)
-    {
-        leftDriveF.setTargetPosition(leftDriveF.getCurrentPosition()+flPosition);
-        rightDriveF.setTargetPosition(rightDriveF.getCurrentPosition()+frPosition);
-        leftDriveB.setTargetPosition(leftDriveB.getCurrentPosition()+blPosition);
-        rightDriveB.setTargetPosition(rightDriveB.getCurrentPosition()+brPosition);
-    }
-
-    boolean driveAnyReachedTarget() {
-        return ((Math.abs(leftDriveF.getCurrentPosition() - leftDriveF.getTargetPosition()) > 50.0)
-                && (Math.abs(leftDriveB.getCurrentPosition() - leftDriveB.getTargetPosition()) > 50.0)
-                && (Math.abs(rightDriveF.getCurrentPosition() - rightDriveB.getTargetPosition()) > 50.0)
-                && (Math.abs(rightDriveB.getCurrentPosition() - rightDriveB.getTargetPosition()) > 50.0));
-    }
-
-    boolean driveAllAreBusy()
-    {
-        return leftDriveF.isBusy() && rightDriveF.isBusy() && leftDriveB.isBusy()
-                && rightDriveB.isBusy();
-    }
-
-    boolean driveLeftAreBusy ()
-    {
-        return rightDriveF.isBusy() && leftDriveB.isBusy();
-    }
-
-    boolean driveRightAreBusy ()
-    {
-        return leftDriveF.isBusy() && rightDriveB.isBusy();
-    }
-
-
-    public void setPowerAll (double power) {
-        leftDriveF.setPower(power);
-        rightDriveF.setPower(power);
-        leftDriveB.setPower(power);
-        rightDriveB.setPower(power);
     }
 
     /**
@@ -437,16 +374,15 @@ public class Olivanie_v2_Hardware
         br = Range.clip(br, -1, 1);
         fr = Range.clip(fr, -1, 1);
         // Set powers
-//        leftDriveF.setPower(fl);
-//        leftDriveB.setPower(bl);
-//        rightDriveB.setPower(br);
-//        rightDriveF.setPower(fr);
         leftDriveB.setPower(bl);
         leftDriveF.setPower(fl);
         rightDriveF.setPower(fr);
         rightDriveB.setPower(br);
     }
 
+    /**
+     * Sets the speeds of the motors to 0.
+     */
     public void setSpeedZero () {
         setSpeedAll(0, 0, 0, 0, 0);
     }
@@ -457,9 +393,6 @@ public class Olivanie_v2_Hardware
      */
     public void updatePosition () {
         bulkData = expansionHub.getBulkInputData();
-//        double currentL = ((double) -rightCollector.getCurrentPosition() / 1144.0);
-//        double currentR = ((double) -tape.getCurrentPosition() / 1144.0);
-//        double currentC = ((double) leftCollector.getCurrentPosition() / 1144.0);
         double currentL = (double) -bulkData.getMotorCurrentPosition(lOWheel) / 1144.0;
         double currentC = (double) bulkData.getMotorCurrentPosition(cOWheel) / 1144.0;
         double currentR = (double) -bulkData.getMotorCurrentPosition(rOWheel) / 1144.0;

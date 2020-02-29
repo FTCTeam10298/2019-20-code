@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import hallib.HalDashboard;
 
-public class RoboMovement extends Olivanie_v2_Hardware{
+public class RoboMovement extends Olivanie_v3_Hardware{
 
     HalDashboard dashboard = HalDashboard.getInstance();
 

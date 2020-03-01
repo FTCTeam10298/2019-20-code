@@ -330,6 +330,11 @@ public class Olivanie_v3_TeleOp extends OpMode {
         }
 
         robot.lift.setTargetPosition(robot.LIFTPOSITION[stateLift]);
+        if (Math.abs(robot.lift.getCurrentPosition() - robot.lift.getTargetPosition()) < 100)
+            robot.lift.setPower(0);
+        else
+            robot.lift.setPower(1);
+        telemetry.addData("Lift motor power: ", robot.lift.getPower());
 
         // End Lift---------------------------------------------------------------------------------
 //

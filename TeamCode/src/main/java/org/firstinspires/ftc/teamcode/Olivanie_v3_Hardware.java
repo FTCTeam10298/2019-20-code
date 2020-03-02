@@ -32,14 +32,12 @@ public class Olivanie_v3_Hardware
     public Servo foundation = null;
     public Servo left4Bar = null;
     public Servo right4Bar = null;
-    public Servo markerDumper = null;
     public Servo leftSideClaw = null;
     public Servo rightSideClaw = null;
     public Servo leftFinger = null;
     public Servo rightFinger = null;
+    public Servo kniod = null;
 
-    public static final double HELD = 0.32;
-    public static final double DROPPED = 0.04;
     public static final double RELEASEDL = 0;
     public static final double GRABBEDL = 1;
     public static final double RELEASEDR = 1;
@@ -48,17 +46,18 @@ public class Olivanie_v3_Hardware
     public static final double FINGERRELEASER = 0.2;
     public static final double FINGERGRABBEDL = 0;
     public static final double FINGERRELEASEL = 0.8;
-    public static final int BLOCK1 = -1000;
-    public static final int BLOCK2 = -2000;
-    public static final int BLOCK3 = -3000;
-    public static final int BLOCK4 = -4000;
-    public static final int BLOCK5 = -5000;
-    public static final int BLOCK6 = -6000;
-    public static final int BLOCK7 = -7000;
-    public static final int BLOCK8 = -8000;
-    public static final int BLOCK9 = -9000;
-    public static final int BLOCK10 = -10000;
-    public static final int [] LIFTPOSITION = {0, BLOCK1, BLOCK2, BLOCK3, BLOCK4, BLOCK5, BLOCK6, BLOCK7, BLOCK8, BLOCK9, BLOCK10};
+    public static final int BLOCK01 = -1000;
+    public static final int BLOCK02 = -2300;
+    public static final int BLOCK03 = -3400;
+    public static final int BLOCK04 = -1000;
+    public static final int BLOCK05 = -2100;
+    public static final int BLOCK06 = -3200;
+    public static final int BLOCK07 = -4300;
+    public static final int BLOCK08 = -5400;
+    public static final int BLOCK09 = -6500;
+    public static final int BLOCK10 = -7600;
+    public static final int [] LIFTPOSITION = {0, BLOCK01, BLOCK02, BLOCK03, BLOCK04, BLOCK05,
+            BLOCK06, BLOCK07, BLOCK08, BLOCK09, BLOCK10};
 
     double deltaL = 0;
     double deltaC = 0;
@@ -101,11 +100,11 @@ public class Olivanie_v3_Hardware
         foundation = hwMap.servo.get("foundation");
         left4Bar = hwMap.servo.get("left 4 bar");
         right4Bar = hwMap.servo.get("right 4 bar");
-        markerDumper = hwMap.servo.get("son of brian");
         leftSideClaw = hwMap.servo.get("left side claw");
         rightSideClaw = hwMap.servo.get("right side claw");
         leftFinger = hwMap.servo.get("left finger");
         rightFinger = hwMap.servo.get("right finger");
+        kniod = hwMap.servo.get("kniod");
 
         // Define and initialize sensors
 
@@ -133,7 +132,7 @@ public class Olivanie_v3_Hardware
         openClaw();
         openFoundation();
         close4Bar();
-        markerDumper.setPosition(HELD);
+        kniod.setPosition(.5);
         leftSideClaw.setPosition(RELEASEDL);
         rightSideClaw.setPosition(RELEASEDR);
         leftFinger.setPosition(FINGERRELEASEL);
@@ -173,14 +172,14 @@ public class Olivanie_v3_Hardware
         lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // PIDF
-        leftDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        rightDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        leftDriveB.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        rightDriveB.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        leftDriveF.setPositionPIDFCoefficients(10);
-        rightDriveF.setPositionPIDFCoefficients(10);
-        leftDriveB.setPositionPIDFCoefficients(10);
-        rightDriveB.setPositionPIDFCoefficients(10);
+        //leftDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
+        //rightDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
+        //leftDriveB.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
+        //rightDriveB.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
+        //leftDriveF.setPositionPIDFCoefficients(10);
+        //rightDriveF.setPositionPIDFCoefficients(10);
+        //leftDriveB.setPositionPIDFCoefficients(10);
+        //rightDriveB.setPositionPIDFCoefficients(10);
 
         // Bulk Data
         expansionHub = hwMap.get(ExpansionHubEx.class, "Expansion Hub 5");
@@ -286,28 +285,35 @@ public class Olivanie_v3_Hardware
      * Swings the 4 bar in to grab a stone
      */
     public void close4Bar () {
-        set4Bar(0);
+        set4Bar(1);
     }
 
     /**
-     * Swings the 4 bar out to place a stone.
+     * Swings the 4 bar out to place a stone for the first 3 stones.
      */
-    public void place4Bar () {
-        set4Bar(1);
+    public void place4BarLow() {
+        set4Bar(.05);
+    }
+
+    /**
+     * Swings the 4 bar out to place a stone for stone 4 and above.
+     */
+    public void place4BarHigh() {
+        set4Bar(.45);
     }
 
     /**
      * Opens the claw to place a stone.
      */
     public void openClaw () {
-        claw.setPosition(.35);
+        claw.setPosition(1);
     }
 
     /**
      * Closes the claw to pick up a stone.
      */
     public void closeClaw() {
-        claw.setPosition(1);
+        claw.setPosition(.35);
     }
 
     /**

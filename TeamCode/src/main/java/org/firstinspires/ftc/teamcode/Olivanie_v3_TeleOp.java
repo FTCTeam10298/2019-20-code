@@ -63,9 +63,9 @@ public class Olivanie_v3_TeleOp extends OpMode {
     double time_a       = 0;
     double dt           = 0;
 
-    double arm = 0.9;
+    int drop = 0;
 
-    int height = 5;
+    double fineAdjust = 0;
 
     double tapePower = 0;// out is .32 in is 0.04
 
@@ -80,12 +80,15 @@ public class Olivanie_v3_TeleOp extends OpMode {
     double liftPosition = 0;
     double barPosition = 0;
 
+    double liftTimer = 0;
+
     boolean collectOtronACTIVE     = false;
     boolean collectOtronSWITCHING  = false;
     boolean collectOtronREVERSE    = false;
     boolean clawSWITCHING = false;
     boolean clawIsOpen = true;
     boolean capstone = false;
+    boolean stackstate = true;
 
     double  counter = 101;
     int stateLift = 0;
@@ -93,8 +96,9 @@ public class Olivanie_v3_TeleOp extends OpMode {
     boolean barIn = true;
     boolean switcherLiftUp = false;
     boolean switcherLiftDown = false;
-    boolean switcherBar = false;
+    boolean switcherDrop = false;
     boolean switcherFoundation = false;
+    boolean switcherStack = false;
 
     // Code to run once when the driver hits INIT
     @Override
@@ -122,13 +126,11 @@ public class Olivanie_v3_TeleOp extends OpMode {
 
         // Calculate loop Period (dt).
         // Let's not repeat last year's failure/laziness that killed our performance at Regionals...
+        // Units are seconds
         dt = getRuntime() - time_a;
         time_a = getRuntime();
         telemetry.addData("Loop Time", "%f", dt);
 
-
-        telemetry.addData("Arm", "%f", arm);
-        telemetry.addData("Height", "%d", height);
         telemetry.addData("Capstone", capstone);
         telemetry.addData("Tape Power", "%f", tapePower);
 
@@ -144,6 +146,7 @@ public class Olivanie_v3_TeleOp extends OpMode {
         telemetry.addData("Theta C", "%f", robot.deltaC);
         telemetry.addData("Odometry R Raw", "%d", robot.tape.getCurrentPosition());
         telemetry.addData("Lift State", "%d", stateLift);
+        telemetry.addData("Drop", "%d", drop);
 
 
         // Send telemetry message to signify robot running
@@ -202,11 +205,7 @@ public class Olivanie_v3_TeleOp extends OpMode {
                 inertia = 0.5;
             }
 
-        if (arm < 0.5) {
-            // Slow down the robot when depositing
-            inertia = 0.3;
-        }
-        else if (inertia < 0.5) {
+        if (inertia < 0.5) {
             // Exit slow mode without waiting for inertia to build back up
             inertia = 0.5;
         }
@@ -217,7 +216,8 @@ public class Olivanie_v3_TeleOp extends OpMode {
         // End Drive--------------------------------------------------------------------------------
 
         // Collector--------------------------------------------------------------------------------
-        if (gamepad1.left_bumper || gamepad1.right_bumper)
+        if (gamepad1.left_bumper || gamepad1.right_bumper || gamepad2.left_bumper ||
+                gamepad2.right_bumper)
             collectOtronSWITCHING = true;
         else if (collectOtronSWITCHING) {
             collectOtronSWITCHING = false;
@@ -225,9 +225,9 @@ public class Olivanie_v3_TeleOp extends OpMode {
         }
 
         // Check if we are reversed or not
-        if (gamepad1.left_bumper)
+        if (gamepad1.left_bumper || gamepad2.left_bumper)
             collectOtronREVERSE = true;
-        else if (gamepad1.right_bumper)
+        else if (gamepad1.right_bumper || gamepad2.right_bumper)
             collectOtronREVERSE = false;
 
         // Run the Collector
@@ -237,6 +237,11 @@ public class Olivanie_v3_TeleOp extends OpMode {
             robot.collectorRev();
         else
             robot.collectorOff();
+
+        if (collectOtronACTIVE || !clawIsOpen)
+            robot.kniod.setPosition(1);
+        else
+            robot.kniod.setPosition(0);
         // End Collector----------------------------------------------------------------------------
 
         // Claw-------------------------------------------------------------------------------------
@@ -272,64 +277,91 @@ public class Olivanie_v3_TeleOp extends OpMode {
         // End Foundation---------------------------------------------------------------------------
 
         // Capstone---------------------------------------------------------------------------------
-        if (gamepad2.b && !capstone) {
-            capstone = true;
-        }
-        else if (capstone && !gamepad2.b) {
-            state2 ++;
-            capstone = false;
-        }
-        if (state2 == 1) {
-            if (robot.markerDumper.getPosition() > 0.2)
-                robot.markerDumper.setPosition(robot.DROPPED);
-            else
-                robot.markerDumper.setPosition(robot.HELD);
-            state2 = 0;
-        }
+
         // End Capstone-----------------------------------------------------------------------------
 
         // Tape Measure-----------------------------------------------------------------------------
-        tapePower = Range.clip(gamepad2.right_trigger - gamepad2.left_trigger, -1,
-                1);
+        tapePower = Range.clip(gamepad1.right_trigger + gamepad2.right_trigger -
+                        gamepad2.left_trigger - gamepad1.left_trigger, -1, 1);
         robot.tape.setPower(-tapePower);
         // End Tape Measure-------------------------------------------------------------------------
 
         // 4-Bar------------------------------------------------------------------------------------
-        if ((gamepad1.y || gamepad2.y) && !switcherBar) {
-            switcherBar = true;
+
+        if (collectOtronACTIVE)
+            robot.set4Bar(.85);
+        else {
+            if (Math.abs(robot.lift.getCurrentPosition() - robot.lift.getTargetPosition()) < 1000) {
+                if (stateLift == 0 || !stackstate)
+                    robot.close4Bar();
+                else if (stateLift < 4)
+                    robot.place4BarLow();
+                else
+                    robot.place4BarHigh();
+            }
         }
-        if (!gamepad1.y && !gamepad2.y && switcherBar) {
-            if (barIn)
-                robot.place4Bar();
-            else
-                robot.close4Bar();
-            barIn = !barIn;
-            switcherBar = false;
-        }
+
         // End 4-Bar--------------------------------------------------------------------------------
 
         // Lift-------------------------------------------------------------------------------------
 
-        if ((gamepad1.dpad_up || gamepad2.dpad_up) && !switcherLiftUp && !switcherLiftDown)
+        if (gamepad2.dpad_up && !switcherLiftUp && !switcherLiftDown)
             switcherLiftUp = true;
-        else if ((gamepad1.dpad_down || gamepad2.dpad_down) && !switcherLiftUp && !switcherLiftDown)
+        else if (gamepad2.dpad_down && !switcherLiftUp && !switcherLiftDown)
             switcherLiftDown = true;
-        else if (!gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad2.dpad_up &&
-                !gamepad2.dpad_down && switcherLiftUp) {
+        else if (!gamepad2.dpad_up && !gamepad2.dpad_down && switcherLiftUp) {
             stateLift++;
+            stackstate = true;
             if (stateLift == robot.LIFTPOSITION.length)
                 stateLift--;
             switcherLiftUp = false;
         }
-        else if (!gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad2.dpad_up &&
-                !gamepad2.dpad_down && switcherLiftDown) {
+        else if (!gamepad2.dpad_up && !gamepad2.dpad_down && switcherLiftDown) {
             stateLift--;
             if (stateLift < 0)
                 stateLift++;
             switcherLiftDown = false;
         }
 
-        robot.lift.setTargetPosition(robot.LIFTPOSITION[stateLift]);
+        if (gamepad2.b && !switcherStack)
+            switcherStack = true;
+        else if (!gamepad2.b && switcherStack) {
+            fineAdjust = 0;
+            stackstate = false;
+            switcherStack = false;
+        }
+
+        if (gamepad2.a && !switcherDrop)
+            switcherDrop = true;
+        else if (!gamepad2.a && switcherDrop) {
+            if (drop == 0)
+                drop = 300;
+            else
+                drop = 0;
+            switcherDrop = false;
+        }
+
+        if (stateLift == 0)
+            drop = 0;
+
+        fineAdjust += gamepad2.left_stick_y * 100 * dt;
+
+        if (stackstate)
+            robot.lift.setTargetPosition(robot.LIFTPOSITION[stateLift] - drop + (int)fineAdjust);
+        else {
+            liftTimer += dt;
+            if (liftTimer > 1) {
+                robot.lift.setTargetPosition(robot.LIFTPOSITION[0]);
+                liftTimer = 0;
+            }
+
+        }
+
+        if (Math.abs(robot.lift.getCurrentPosition() - robot.lift.getTargetPosition()) < 10)
+            robot.lift.setPower(0);
+        else
+            robot.lift.setPower(1);
+        telemetry.addData("Lift motor power: ", robot.lift.getPower());
 
         // End Lift---------------------------------------------------------------------------------
 //

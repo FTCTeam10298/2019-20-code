@@ -14,6 +14,7 @@ import org.openftc.revextensions2.RevBulkData;
 /**
  * This is NOT an opmode.
  * This class is used to define all the specific hardware for a single robot.
+ * This class is extended by RoboMovement, which has all of the autonomous drive functions as well.
  */
 
 public class Olivanie_v3_Hardware
@@ -42,9 +43,9 @@ public class Olivanie_v3_Hardware
     public static final double GRABBEDL = 1;
     public static final double RELEASEDR = 1;
     public static final double GRABBEDR = 0;
-    public static final double FINGERGRABBEDR = 1;
+    public static final double FINGERGRABBEDR = 0.8;
     public static final double FINGERRELEASER = 0.2;
-    public static final double FINGERGRABBEDL = 0;
+    public static final double FINGERGRABBEDL = 0.2;
     public static final double FINGERRELEASEL = 0.8;
     public static final int BLOCK01 = -1000;
     public static final int BLOCK02 = -2300;
@@ -105,8 +106,6 @@ public class Olivanie_v3_Hardware
         leftFinger = hwMap.servo.get("left finger");
         rightFinger = hwMap.servo.get("right finger");
         kniod = hwMap.servo.get("kniod");
-
-        // Define and initialize sensors
 
         // Set direction for all motors
         leftDriveF.setDirection(DcMotor.Direction.REVERSE);
@@ -171,23 +170,12 @@ public class Olivanie_v3_Hardware
         // Lift uses encoder
         lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        // PIDF
-        //leftDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        //rightDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        //leftDriveB.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        //rightDriveB.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        //leftDriveF.setPositionPIDFCoefficients(10);
-        //rightDriveF.setPositionPIDFCoefficients(10);
-        //leftDriveB.setPositionPIDFCoefficients(10);
-        //rightDriveB.setPositionPIDFCoefficients(10);
-
         // Bulk Data
         expansionHub = hwMap.get(ExpansionHubEx.class, "Expansion Hub 5");
 
         lOWheel = (ExpansionHubMotor) hwMap.dcMotor.get("left collector");
         cOWheel = (ExpansionHubMotor) hwMap.dcMotor.get("tape");
         rOWheel = (ExpansionHubMotor) hwMap.dcMotor.get("left drive b");
-
     }
 
     /**
@@ -208,44 +196,84 @@ public class Olivanie_v3_Hardware
         rightDriveB.setPower(powerRB);
     }
 
+    /**
+     * Sets the location of the global robot in the field.
+     * @param x The x coordinate in inches.
+     * @param y The y coordinate in inches.
+     * @param angle The angle in radians.
+     */
     public void setGlobalRobot (double x, double y, double angle) {
         setX(x);
         setY(y);
         setAngle(angle);
     }
 
+    /**
+     * Sets the x coordinate of the global robot.
+     * @param x The x coordinate in inches.
+     */
     public void setX (double x) {
         globalRobot.setX(x);
     }
 
+    /**
+     * Sets the y coordinate of the global robot.
+     * @param y The y coordinate in inches.
+     */
     public void setY (double y) {
         globalRobot.setY(y);
     }
 
+    /**
+     * Sets the angle of the global robot.
+     * @param angle The angle in radians.
+     */
     public void setAngle (double angle) {
         globalRobot.setAngle(angle);
     }
 
+    /**
+     * Gets the x coordinate of the robot.
+     * @return The x coordinate in inches.
+     */
     public double getX() {
         return globalRobot.getX();
     }
 
+    /**
+     * Gets the y coordinate of the robot.
+     * @return The y coordinate in inches.
+     */
     public double getY() {
         return globalRobot.getY();
     }
 
+    /**
+     * Gets the global angle in radians.
+     * @return The angle in question.
+     */
     public double getWorldAngle_rad () {
         return globalRobot.getAngle();
     }
 
+    /**
+     * Sets the position of the foundation moving servo to grab the foundation.
+     */
     public void closeFoundation() {
         foundation.setPosition(1);
     }
 
+    /**
+     * Sets the position of the foundation moving servo to release the foundation.
+     */
     public void openFoundation() {
         foundation.setPosition(0.35);
     }
 
+    /**
+     * Run the collector motors at a given power.
+     * @param power The power to run the collector.
+     */
     public void runCollector (double power) {
         leftCollector.setPower(power);
         rightCollector.setPower(power);
@@ -340,8 +368,8 @@ public class Olivanie_v3_Hardware
         // Calculate theoretical values for motor powers using transformation matrix
         double fl = vY + vX - vA;
         double bl = vY - vX - vA;
-        double br = vY + vX + vA;
-        double fr = vY - vX + vA;
+        double br = vY - vX + vA;
+        double fr = vY + vX + vA;
         // Find the largest magnitude of power and the average magnitude of power to scale down to
         // maxpower and up to minpower
         double max = Math.abs(fl);
@@ -405,9 +433,9 @@ public class Olivanie_v3_Hardware
      */
     public void updatePosition () {
         bulkData = expansionHub.getBulkInputData();
-        double currentL = (double) -bulkData.getMotorCurrentPosition(lOWheel) / 1144.0;
+        double currentL = (double) bulkData.getMotorCurrentPosition(lOWheel) / 1144.0;
         double currentC = (double) bulkData.getMotorCurrentPosition(cOWheel) / 1144.0;
-        double currentR = (double) -bulkData.getMotorCurrentPosition(rOWheel) / 1144.0;
+        double currentR = (double) bulkData.getMotorCurrentPosition(rOWheel) / 1144.0;
         deltaL = currentL - previousL;
         deltaC = currentC - previousC;
         deltaR = currentR - previousR;

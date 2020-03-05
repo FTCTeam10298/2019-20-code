@@ -82,6 +82,8 @@ public class Olivanie_v3_TeleOp extends OpMode {
 
     double liftTimer = 0;
 
+    double barTimer = 0;
+
     boolean collectOtronACTIVE     = false;
     boolean collectOtronSWITCHING  = false;
     boolean collectOtronREVERSE    = false;
@@ -161,7 +163,11 @@ public class Olivanie_v3_TeleOp extends OpMode {
             else
                 y = 0;
 
-            if (gamepad1.left_stick_x > .1 || gamepad1.left_stick_x < -.1)
+            if (gamepad2.dpad_left)
+                x = -.5;
+            else if (gamepad2.dpad_right)
+                x = .5;
+            else if (gamepad1.left_stick_x > .1 || gamepad1.left_stick_x < -.1)
                 x = gamepad1.left_stick_x;
             else
                 x = 0;
@@ -239,9 +245,9 @@ public class Olivanie_v3_TeleOp extends OpMode {
             robot.collectorOff();
 
         if (collectOtronACTIVE || !clawIsOpen)
-            robot.kniod.setPosition(1);
-        else
             robot.kniod.setPosition(0);
+        else
+            robot.kniod.setPosition(1);
         // End Collector----------------------------------------------------------------------------
 
         // Claw-------------------------------------------------------------------------------------
@@ -288,8 +294,12 @@ public class Olivanie_v3_TeleOp extends OpMode {
 
         // 4-Bar------------------------------------------------------------------------------------
 
-        if (collectOtronACTIVE)
-            robot.set4Bar(.85);
+        if (collectOtronACTIVE) {
+            robot.set4Bar(.83);
+            barTimer = 0;
+        }
+        else if (barTimer < .5)
+            barTimer += dt;
         else {
             if (Math.abs(robot.lift.getCurrentPosition() - robot.lift.getTargetPosition()) < 1000) {
                 if (stateLift == 0 || !stackstate)
@@ -344,10 +354,10 @@ public class Olivanie_v3_TeleOp extends OpMode {
         if (stateLift == 0)
             drop = 0;
 
-        fineAdjust += gamepad2.left_stick_y * 100 * dt;
+        fineAdjust += (gamepad2.left_stick_y * 100 * dt) + (gamepad2.right_stick_y * 200 * dt);
 
         if (stackstate)
-            robot.lift.setTargetPosition(robot.LIFTPOSITION[stateLift] - drop + (int)fineAdjust);
+            robot.lift.setTargetPosition(robot.LIFTPOSITION[stateLift] + drop + (int)fineAdjust);
         else {
             liftTimer += dt;
             if (liftTimer > 1) {

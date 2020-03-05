@@ -69,7 +69,7 @@ public class RoboMovement extends Olivanie_v3_Hardware{
             // Calculate the error in x and y and use the PID to find the error in angle
             double errx = -Math.sin(absAngleError) * distanceError;
             double erry = Math.cos(absAngleError) * distanceError;
-            double dx = errx * distancePID.getPropo();
+            double dx = errx * distancePID.getPropo() * (10.0/7.0); // Constant to scale strafing up
             double dy = erry * distancePID.getPropo();
             double da = (angleError * anglePID.getPropo());
             dashboard = HalDashboard.getInstance();
@@ -98,12 +98,12 @@ public class RoboMovement extends Olivanie_v3_Hardware{
 //            da += (angleError - prevErrorA) * distancePID.getDeriv()/ robot.getElapsedTime();
             //
             double dTotal = Math.abs(dx) + Math.abs(dy) + 1E-6;
-            double newSpeedx = Range.clip(dx, -3, 3);// / dTotal;
-            double newSpeedy = Range.clip(dy, -3, 3);// / dTotal;
-            double newSpeedA = Range.clip(da, -3, 3);
+            double newSpeedx = Range.clip(dx, -1, 1);// / dTotal;
+            double newSpeedy = Range.clip(dy, -1, 1);// / dTotal;
+            double newSpeedA = Range.clip(da, -1, 1);
 
             dashboard.displayPrintf(12, "Speedx, SpeedY, SpeedA %f, %f, %f", newSpeedx, newSpeedy, newSpeedA);
-            setSpeedAll(newSpeedx, newSpeedy, newSpeedA, .05, maxPower);
+            setSpeedAll(newSpeedx, newSpeedy, newSpeedA, .35, maxPower);
         }
         else if (state == State.DONE) {
             setSpeedZero();
@@ -128,7 +128,7 @@ public class RoboMovement extends Olivanie_v3_Hardware{
     public void StraightGoToPosition (Coordinate target, double maxPower,
                                       double distanceMin, LinearOpMode opmodeisactive) {
         DoGoToPosition(target, maxPower, new PID(.1, 0, 0),
-                new PID(.5, 0, 0), distanceMin, 5, State.INIT, opmodeisactive);
+                new PID(2, 0, 0), distanceMin, 5, State.INIT, opmodeisactive);
     }
 
     public void TurnGoToPosition (Coordinate target, double maxPower,

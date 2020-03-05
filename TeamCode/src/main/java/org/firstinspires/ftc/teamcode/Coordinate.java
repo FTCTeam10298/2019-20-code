@@ -60,24 +60,47 @@ public class Coordinate {
         return angle;
     }
 
+    /**
+     * Sets the x component of the Coordinate in inches.
+     * @param x The x value that we want to set.
+     */
     public void setX(double x) {
         this.x = x;
     }
 
+    /**
+     * Sets the y component of the Coordinate in inches.
+     * @param y The y value that we want to set.
+     */
     public void setY(double y) {
         this.y = y;
     }
 
+    /**
+     * Sets the angle of the Coordinate in radians.
+     * @param angle The angle that we want to set.
+     */
     public void setAngle(double angle) {
         this.angle = angle;
     }
 
+    /**
+     * Sets all of the parameters of the Coordinate.
+     * @param x The x value that we want to set.
+     * @param y The y value that we want to set.
+     * @param angle
+     */
     public void setCoordinate(double x, double y, double angle) {
         this.setX(x);
         this.setY(y);
         this.setAngle(Math.toRadians(angle));
     }
 
+    /**
+     * Wraps the angle around so that the robot doesn't unnecessarily turn over 180 degrees.
+     * @param angle The angle to wrap.
+     * @return The wrapped angle.
+     */
     public double wrapAngle(double angle) {
         return angle % (2*Math.PI);
     }

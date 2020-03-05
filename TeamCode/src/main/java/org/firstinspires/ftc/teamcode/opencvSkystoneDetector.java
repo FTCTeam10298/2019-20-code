@@ -33,7 +33,7 @@ import java.util.List;
  * 20 560
  *
  * monitor: 640 x 480
- *YES
+ *IN_FRONT_OF_US
  */
 @Disabled
 @Autonomous(name= "opencvSkystoneDetector", group="Sky autonomous")

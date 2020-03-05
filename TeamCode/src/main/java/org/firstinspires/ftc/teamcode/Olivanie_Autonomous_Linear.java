@@ -31,7 +31,6 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.Range;
 
 import ftclib.FtcChoiceMenu;
 import ftclib.FtcMenu;
@@ -100,7 +99,8 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
     }
 
     public enum Foundation {
-        YES,
+        IN_FRONT_OF_US,
+        BACK_WALL,
         NO,
         PARTNER
     }
@@ -126,7 +126,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
     Skystones skystones = Skystones.ONE;
     SkystonePosition skystonePosition = SkystonePosition.CENTER;
     Stones stones = Stones.ZERO;
-    Foundation foundation = Foundation.YES;
+    Foundation foundation = Foundation.IN_FRONT_OF_US;
     Park park = Park.WALL;
     Auto_path path = Auto_path.PATH1;
 
@@ -207,7 +207,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
             if (startposition == StartPosition.BUILDING1) {
                 if (skystones == Skystones.ZERO) {
                     if (stones == Stones.ZERO) {
-                        if (foundation == Foundation.YES) {
+                        if (foundation == Foundation.IN_FRONT_OF_US) {
                             if (park == Park.WALL) {
                                 path = Auto_path.PATH1;
                             }
@@ -222,7 +222,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
             if (startposition == StartPosition.BUILDING1) {
                 if (skystones == Skystones.ZERO) {
                     if (stones == Stones.ZERO) {
-                        if (foundation == Foundation.YES) {
+                        if (foundation == Foundation.IN_FRONT_OF_US) {
                             if (park == Park.WALL) {
                                 path = Auto_path.PATH2;
                             }
@@ -236,9 +236,9 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         }
 
 
-
         double angle;
         double direction;
+
         if (alliance == Alliance.RED && (startposition == StartPosition.LOADING1 ||
                 startposition == StartPosition.LOADING2)) {
             angle = 180;
@@ -251,9 +251,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
 
 
         robot.driveSetMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        robot.driveSetMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.driveSetMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        robot.driveSetTargetPosition(0, 0, 0, 0);
+        robot.driveSetMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         /*
          * Instantiate an OpenCvCamera object for the camera we'll be using.
@@ -304,8 +302,10 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
 
         // Set starting location based off of menu options
         if (alliance == Alliance.BLUE) {
-            if (startposition == StartPosition.LOADING2)
+            if (startposition == StartPosition.LOADING2) {
                 robot.setGlobalRobot(-63, 36, 0);
+                //robot.setGlobalRobot(0, 0, 0);
+            }
             else if (startposition == StartPosition.LOADING1)
                 robot.setGlobalRobot(-63, 60, 0);
             else if (startposition == StartPosition.BUILDING2)
@@ -471,24 +471,64 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         // Pause the program for the selected delay period
         sleep(delay);
         if (DoTask("Test", runmode, false)) {
-            robot.setGlobalRobot(0,0,0);
-            for (int i = 0; i < 2; i++) {
-                target.setCoordinate(target.getX(), target.getY() + 72, target.getAngle());
-                robot.StraightGoToPosition(target, .2, .1, this);
-                sleep(5000);
-                target.setCoordinate(target.getX(), target.getY() - 72, target.getAngle());
-                robot.StraightGoToPosition(target, .2, .1, this);
-                sleep(5000);
+//            robot.setGlobalRobot(0,0,0);
+//            for (int i = 0; i < 2; i++) {
+//                target.setCoordinate(target.getX(), target.getY() + 72, target.getAngle());
+//                robot.StraightGoToPosition(target, .2, .1, this);
+//                sleep(5000);
+//                target.setCoordinate(target.getX(), target.getY() - 72, target.getAngle());
+//                robot.StraightGoToPosition(target, .2, .1, this);
+//                sleep(5000);
+//
+////                target.setCoordinate(0, 0, 135);
+////                robot.DoGoToPosition(target, .2, new PID(0, 0, 0),
+////                        new PID (.5, 0, 0), 10, 1, RoboMovement.State.INIT, this);
+////                sleep(5000);
+////                target.setCoordinate(0, 0, 0);
+////                robot.DoGoToPosition(target, .2, new PID(0, 0, 0),
+////                        new PID (.5, 0, 0), 10, 1, RoboMovement.State.INIT, this);
+////                sleep(5000);
+//            }
+//            grabStoneL();
+//            sleep(1000);
+//            dropStoneL();
+//            sleep(1000);
+//            grabStoneR();
+//            sleep(1000);
+//            dropStoneR();
+//            sleep(1000);
 
-//                target.setCoordinate(0, 0, 135);
-//                robot.DoGoToPosition(target, .2, new PID(0, 0, 0),
-//                        new PID (.5, 0, 0), 10, 1, RoboMovement.State.INIT, this);
-//                sleep(5000);
-//                target.setCoordinate(0, 0, 0);
-//                robot.DoGoToPosition(target, .2, new PID(0, 0, 0),
-//                        new PID (.5, 0, 0), 10, 1, RoboMovement.State.INIT, this);
-//                sleep(5000);
-            }
+//            robot.setGlobalRobot(0, 0, Math.toRadians(-90));
+//            target.setCoordinate(0, 0, -90);
+//
+//            grab(-1); //red
+//            sleep(1000);
+//            grab(1); //blue
+
+//
+            target.setCoordinate(robot.getX(), robot.getY(), Math.toDegrees(robot.getWorldAngle_rad()));
+//
+//            target.setCoordinate(target.getX() + 48, target.getY() + 48, target.getAngle());
+//            robot.StraightGoToPosition(target, .5, 1, this);
+//            sleep(2000);
+//            target.setCoordinate(target.getX(), target.getY() - 72, target.getAngle());
+//            robot.StraightGoToPosition(target, .5, 1, this);
+//            sleep(2000);
+//            target.setCoordinate(target.getX(), target.getY() + 72, target.getAngle());
+//            robot.StraightGoToPosition(target, .5, 1, this);
+//            sleep(2000);
+//            target.setCoordinate(target.getX(), target.getY() - 72, target.getAngle());
+//            robot.StraightGoToPosition(target, .5, 1, this);
+//            sleep(2000);
+
+            target.setCoordinate(-42 * direction , 5 * 8 + 13,
+                    -90);
+            robot.StraightGoToPosition(target, .45, 1,
+                    this);
+
+//            robot.driveSetPower(.5, .5, .5, .5);
+//            sleep(3000);
+//            robot.setSpeedZero();
         }
 
         // Init
@@ -499,7 +539,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
             // --------------------------These are all paths without stones-------------------------
             if (totalStones == 0) {
                 // ----------------These are all paths that only move the foundation----------------
-                if (foundation == Foundation.YES) {
+                if (foundation == Foundation.IN_FRONT_OF_US) {
                     target.setCoordinate(-28 * direction, 126, angle + 180);
                     robot.StraightGoToPosition(target, 1, 1,
                             this);
@@ -567,7 +607,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                         robot.StraightGoToPosition(target, .45, 1,
                                 this);
                         grab(direction);
-                        if (foundation == Foundation.YES && i == totalStones - 1)
+                        if (foundation == Foundation.IN_FRONT_OF_US && i == totalStones - 1)
                             target.setCoordinate(-45 * direction, 134, -90);
                         else
                             target.setCoordinate(-45 * direction, 96, -90);
@@ -576,7 +616,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                         drop(direction);
                     }
                     robot.setSpeedZero();
-                    if (foundation == Foundation.YES) { // We move the Foundation
+                    if (foundation == Foundation.IN_FRONT_OF_US) { // We move the Foundation
                         target.setCoordinate(target.getX(), target.getY(), angle + 180);
                         robot.TurnGoToPosition(target, 1,  2,
                                 this);
@@ -622,7 +662,9 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
      */
 
     /**
-     * For Debug mode, runs a particular task.
+     * Runs a task, which has no effect in Auto mode.
+     * Tasks are chunks of the program that can be separated out.
+     * In Debug mode, this runs a particular task.
      * @param taskname The name of the task to be run.
      * @param debug The actual runmode.
      * @param default_value Whether or not to run this method when in auto mode.
@@ -654,16 +696,34 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
      * @param direction Determines which direction to drive.
      */
     public void grab (double direction) {
-        target.setCoordinate(target.getX() + (direction * 6), target.getY(),
+        if (alliance == Alliance.BLUE) {
+            robot.leftFinger.setPosition(robot.FINGERRELEASEL);
+            sleep(500);
+            robot.leftSideClaw.setPosition(robot.GRABBEDL);
+            sleep(500);
+        }
+        else {
+            robot.rightFinger.setPosition(robot.FINGERRELEASER);
+            sleep(500);
+            robot.rightSideClaw.setPosition(robot.GRABBEDR);
+            sleep(500);
+        }
+        target.setCoordinate(target.getX() + (direction * 2), target.getY(),
                 Math.toDegrees(target.getAngle()));
-        robot.StraightGoToPosition(target, .1, .4, this);
-        if (alliance == Alliance.BLUE)
-            grabStoneR();
-        else
-            grabStoneL();
-        target.setCoordinate(target.getX() - (direction * 8), target.getY(),
+        robot.StraightGoToPosition(target, .2, .4, this);
+        if (alliance == Alliance.BLUE) {
+            robot.leftFinger.setPosition(robot.FINGERGRABBEDL);
+            sleep(500);
+            robot.leftSideClaw.setPosition(robot.RELEASEDL);
+        }
+        else {
+            robot.rightFinger.setPosition(robot.FINGERGRABBEDR);
+            sleep(500);
+            robot.rightSideClaw.setPosition(robot.RELEASEDR);
+        }
+        target.setCoordinate(target.getX() - (direction * 2), target.getY(),
                 Math.toDegrees(target.getAngle()));
-        robot.StraightGoToPosition(target, .2, .5, this);
+        robot.StraightGoToPosition(target, .3, .5, this);
     }
 
     /**
@@ -940,7 +1000,9 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
     @Override
     public boolean isMenuBackButton() { return gamepad1.dpad_left; }
 
-
+    /**
+     * Actually runs the menu for the drivers.
+     */
     private void doMenus() {
         FtcChoiceMenu<RunMode> modeMenu = new FtcChoiceMenu<>("Run Mode", null,
                 this);
@@ -991,7 +1053,8 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         if (skystonesMenu.getCurrentChoiceObject() == Skystones.ZERO)
             stonesMenu.addChoice("Six", Stones.SIX, false, foundationMenu);
 
-        foundationMenu.addChoice("Yes", Foundation.YES, true, parkMenu);
+        foundationMenu.addChoice("In front of us", Foundation.IN_FRONT_OF_US, true, parkMenu);
+        foundationMenu.addChoice("Against the Back Wall", Foundation.BACK_WALL, false, parkMenu);
         foundationMenu.addChoice("No", Foundation.NO, false, parkMenu);
         foundationMenu.addChoice("Partner does it", Foundation.PARTNER, false,
                 parkMenu);

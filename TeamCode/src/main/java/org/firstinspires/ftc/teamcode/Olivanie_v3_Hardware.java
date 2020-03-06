@@ -39,10 +39,10 @@ public class Olivanie_v3_Hardware
     public Servo rightFinger = null;
     public Servo kniod = null;
 
-    public static final double RELEASEDL = 0;
-    public static final double GRABBEDL = 1;
-    public static final double RELEASEDR = 1;
-    public static final double GRABBEDR = 0;
+    public static final double HELDL = .3;
+    public static final double DROPPEDL = .67;
+    public static final double HELDR = .7;
+    public static final double DROPPEDR = .33;
     public static final double FINGERGRABBEDR = 0.8;
     public static final double FINGERRELEASER = 0.2;
     public static final double FINGERGRABBEDL = 0.2;
@@ -132,10 +132,10 @@ public class Olivanie_v3_Hardware
         openFoundation();
         close4Bar();
         kniod.setPosition(.5);
-        leftSideClaw.setPosition(RELEASEDL);
-        rightSideClaw.setPosition(RELEASEDR);
-        leftFinger.setPosition(FINGERRELEASEL);
-        rightFinger.setPosition(FINGERRELEASER);
+        leftSideClaw.setPosition(0);
+        rightSideClaw.setPosition(1);
+        leftFinger.setPosition(FINGERGRABBEDL);
+        rightFinger.setPosition(FINGERGRABBEDR);
 
         // Set motors to use brake mode
         leftDriveF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

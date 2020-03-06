@@ -54,7 +54,7 @@ public class RoboMovement extends Olivanie_v3_Hardware{
             current.setCoordinate(globalRobot.getX(), globalRobot.getY(), Math.toDegrees(globalRobot.getAngle()));
             // Find the error in distance and angle, ensuring angle does not exceed 2*Math.PI
             double distanceError = Math.hypot(current.getX() - target.getX(), current.getY() - target.getY());
-            double angleError = (target.getAngle() - current.getAngle()) % (2*Math.PI);
+            double angleError = (target.getAngle() - current.getAngle()) % (Math.PI);
             if (angleError > Math.PI)
                 angleError -= 2*Math.PI;
             // Find the absolute angle error

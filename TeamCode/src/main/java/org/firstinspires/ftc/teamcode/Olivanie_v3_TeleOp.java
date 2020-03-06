@@ -245,9 +245,9 @@ public class Olivanie_v3_TeleOp extends OpMode {
             robot.collectorOff();
 
         if (collectOtronACTIVE || !clawIsOpen)
-            robot.kniod.setPosition(0);
-        else
             robot.kniod.setPosition(1);
+        else
+            robot.kniod.setPosition(0);
         // End Collector----------------------------------------------------------------------------
 
         // Claw-------------------------------------------------------------------------------------

@@ -88,7 +88,7 @@ public class Coordinate {
      * Sets all of the parameters of the Coordinate.
      * @param x The x value that we want to set.
      * @param y The y value that we want to set.
-     * @param angle
+     * @param angle The angle that we want to set.
      */
     public void setCoordinate(double x, double y, double angle) {
         this.setX(x);

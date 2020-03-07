@@ -40,13 +40,13 @@ public class Olivanie_v3_Hardware
     public Servo kniod = null;
 
     public static final double HELDL = .3;
-    public static final double DROPPEDL = .67;
+    public static final double DROPPEDL = .65;
     public static final double HELDR = .7;
-    public static final double DROPPEDR = .33;
+    public static final double DROPPEDR = .35;
     public static final double FINGERGRABBEDR = 0.8;
-    public static final double FINGERRELEASER = 0.2;
+    public static final double FINGERRELEASER = 0.3;
     public static final double FINGERGRABBEDL = 0.2;
-    public static final double FINGERRELEASEL = 0.8;
+    public static final double FINGERRELEASEL = 0.7;
     public static final int BLOCK01 = -1000;
     public static final int BLOCK02 = -2300;
     public static final int BLOCK03 = -3400;
@@ -56,7 +56,7 @@ public class Olivanie_v3_Hardware
     public static final int BLOCK07 = -4300;
     public static final int BLOCK08 = -5400;
     public static final int BLOCK09 = -6500;
-    public static final int BLOCK10 = -7600;
+    public static final int BLOCK10 = -7700;
     public static final int [] LIFTPOSITION = {0, BLOCK01, BLOCK02, BLOCK03, BLOCK04, BLOCK05,
             BLOCK06, BLOCK07, BLOCK08, BLOCK09, BLOCK10};
 
@@ -131,7 +131,7 @@ public class Olivanie_v3_Hardware
         openClaw();
         openFoundation();
         close4Bar();
-        kniod.setPosition(.5);
+        kniod.setPosition(.1);
         leftSideClaw.setPosition(0);
         rightSideClaw.setPosition(1);
         leftFinger.setPosition(FINGERGRABBEDL);
@@ -334,14 +334,21 @@ public class Olivanie_v3_Hardware
      * Opens the claw to place a stone.
      */
     public void openClaw () {
-        claw.setPosition(1);
+        claw.setPosition(.6);
     }
 
     /**
      * Closes the claw to pick up a stone.
      */
-    public void closeClaw() {
-        claw.setPosition(.35);
+    public void closeClaw () {
+        claw.setPosition(0);
+    }
+
+    /**
+     * Opens the claw enough to trigger the capstone
+     */
+    public void capClaw () {
+        claw.setPosition(1);
     }
 
     /**

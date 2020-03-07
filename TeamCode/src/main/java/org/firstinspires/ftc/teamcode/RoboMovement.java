@@ -54,7 +54,11 @@ public class RoboMovement extends Olivanie_v3_Hardware{
             current.setCoordinate(globalRobot.getX(), globalRobot.getY(), Math.toDegrees(globalRobot.getAngle()));
             // Find the error in distance and angle, ensuring angle does not exceed 2*Math.PI
             double distanceError = Math.hypot(current.getX() - target.getX(), current.getY() - target.getY());
-            double angleError = (target.getAngle() - current.getAngle()) % (Math.PI);
+            double angleError = target.getAngle() - current.getAngle();
+            while (angleError > 180)
+                angleError -= 360;
+            while (angleError < -180)
+                angleError += 360;
             if (angleError > Math.PI)
                 angleError -= 2*Math.PI;
             // Find the absolute angle error
@@ -93,17 +97,17 @@ public class RoboMovement extends Olivanie_v3_Hardware{
 //            dx += sumErrorX * distancePID.getInteg();
 //            dy += sumErrorY * distancePID.getInteg();
 //            da += sumErrorA * anglePID.getInteg();
-//            dx += (errx - prevErrorX) * distancePID.getDeriv()/ robot.getElapsedTime();
-//            dy += (erry - prevErrorY) * distancePID.getDeriv()/ robot.getElapsedTime();
-//            da += (angleError - prevErrorA) * distancePID.getDeriv()/ robot.getElapsedTime();
-            //
+//            dx += (errx - prevErrorX) * distancePID.getDeriv()/ getElapsedTime();
+//            dy += (erry - prevErrorY) * distancePID.getDeriv()/ getElapsedTime();
+//            da += (angleError - prevErrorA) * anglePID.getDeriv()/ getElapsedTime();
+
             double dTotal = Math.abs(dx) + Math.abs(dy) + 1E-6;
             double newSpeedx = Range.clip(dx, -1, 1);// / dTotal;
             double newSpeedy = Range.clip(dy, -1, 1);// / dTotal;
             double newSpeedA = Range.clip(da, -1, 1);
 
             dashboard.displayPrintf(12, "Speedx, SpeedY, SpeedA %f, %f, %f", newSpeedx, newSpeedy, newSpeedA);
-            setSpeedAll(newSpeedx, newSpeedy, newSpeedA, .35, maxPower);
+            setSpeedAll(newSpeedx, newSpeedy, newSpeedA, .16, maxPower);
         }
         else if (state == State.DONE) {
             setSpeedZero();
@@ -111,6 +115,20 @@ public class RoboMovement extends Olivanie_v3_Hardware{
         return state;
     }
 
+    /**
+     * Executes goToPosition in LinearOpMode. Uses a while loop to continue updating position and
+     * error to drive.
+     * @param target The target Coordinate to drive to.
+     * @param maxPower The maximum power allowed on the drive motors.
+     * @param distancePID The PID for the x-y error.
+     * @param anglePID The PID for the theta error.
+     * @param distanceMin The minimum allowed distance away from the target to terminate.
+     * @param angleDegMin The minimum allowed angle away from the target to terminate.
+     * @param state The current State of the robot.
+     * @param opmodeisactive The LinearOpMode that this call is in. Used to tell if opModeIsActive
+     *                       so that stopping mid-loop doesn't cause an error.
+     * @return The new State of the robot.
+     */
     public State DoGoToPosition (Coordinate target, double maxPower,
                                  PID distancePID, PID anglePID, double distanceMin,
                                  double angleDegMin, State state, LinearOpMode opmodeisactive) {
@@ -125,12 +143,28 @@ public class RoboMovement extends Olivanie_v3_Hardware{
         return current;
     }
 
+    /**
+     * Executes DoGoToPosition with set PIDs optimized for straight driving.
+     * @param target The target Coordinate to drive to.
+     * @param maxPower The maximum power allowed on the drive motors.
+     * @param distanceMin The minimum allowed distance away from the target to terminate.
+     * @param opmodeisactive The LinearOpMode that this call is in. Used to tell if opModeIsActive
+     *                       so that stopping mid-loop doesn't cause an error.
+     */
     public void StraightGoToPosition (Coordinate target, double maxPower,
                                       double distanceMin, LinearOpMode opmodeisactive) {
         DoGoToPosition(target, maxPower, new PID(.1, 0, 0),
                 new PID(2, 0, 0), distanceMin, 5, State.INIT, opmodeisactive);
     }
 
+    /**
+     * Executes DoGoToPosition with set PIDs optimized for straight driving.
+     * @param target The target Coordinate to drive to.
+     * @param maxPower The maximum power allowed on the drive motors.
+     * @param angleDegMin The minimum allowed distance away from the target to terminate.
+     * @param opmodeisactive The LinearOpMode that this call is in. Used to tell if opModeIsActive
+     *                       so that stopping mid-loop doesn't cause an error.
+     */
     public void TurnGoToPosition (Coordinate target, double maxPower,
                                   double angleDegMin, LinearOpMode opmodeisactive) {
         DoGoToPosition(target, maxPower, new PID(0.01, 0 , 0),

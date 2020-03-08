@@ -362,8 +362,13 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
             speed = .5;
         else if (totalStones == 2)
             speed = .85;
-        else
-            speed = 1;
+        else {
+            if (totalStones == 3)
+                speed = .7;
+            else if (totalStones > 3)
+                speed = .75;
+        }
+
 
         /**
          * ----- AUTONOMOUS START-------------------------------------------------------------------
@@ -631,18 +636,31 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                             robot.rightFinger.setPosition(robot.FINGERRELEASER);
                             robot.rightSideClaw.setPosition(robot.DROPPEDR);
                         }
-                        target.setCoordinate(-39 * direction , stoneOrder[i] * 8 + 9,
+                        if (i == 0)
+                            target.setCoordinate(-38 * direction , stoneOrder[i] * 8 + 9,
                                       -90);
+                        else
+                            target.setCoordinate(-38 * direction, stoneOrder[i] * 8 + 9,
+                                    -90);
                         robot.StraightGoToPosition(target, speed, 1, this);
                         grab(direction);
-                        target.setCoordinate(-41 * direction, 90, -90);
-                        robot.StraightGoToPosition(target, speed, 10, this);
-                        if ((foundation == Foundation.IN_FRONT_OF_US || foundation ==
-                                Foundation.BACK_WALL) && i == totalStones - 1)
-                            target.setCoordinate(-30 * direction, 120, -90);
+                        if (foundation == Foundation.NO)
+                            target.setCoordinate(-43 * direction, 90, -90);
                         else
-                            target.setCoordinate(-30 * direction, 130, -90);
-                        robot.StraightGoToPosition(target, speed,  1, this);
+                            target.setCoordinate(-42 * direction, 90, -90);
+                        robot.StraightGoToPosition(target, speed, 10, this);
+                        if (foundation == Foundation.NO) {
+                            target.setCoordinate(-35 * direction, 90, -90);
+                            robot.StraightGoToPosition(target, speed, 3, this);
+                        }
+                        else {
+                            if ((foundation == Foundation.IN_FRONT_OF_US || foundation ==
+                                    Foundation.BACK_WALL) && i == totalStones - 1)
+                                target.setCoordinate(-30 * direction, 120, -90);
+                            else
+                                target.setCoordinate(-30 * direction, 130, -90);
+                            robot.StraightGoToPosition(target, speed, 1, this);
+                        }
                         drop(direction);
                     }
                     robot.setSpeedZero();
@@ -700,13 +718,13 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                                 this);
                         robot.closeFoundation();
                         sleep(490);
-                        target.setCoordinate(-60 * direction, 125, angle - 180);
+                        target.setCoordinate(-60 * direction, 120, angle - 180);
                         robot.DoGoToPosition(target, 1, new PID(1, 0, 0),
                                 new PID(20, 0, 0), 2, 10,
                                 RoboMovement.State.INIT, this);
                         robot.openFoundation();
                         sleep(390);
-                        target.setCoordinate(-61 * direction, 90, -angle - 180);
+                        target.setCoordinate(-61 * direction, 90, angle - 180);
                         robot.StraightGoToPosition(target, speed,  2,
                                 this);
                     }
@@ -716,7 +734,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
                                 new PID(2, 0, 0), 2, 10,
                                 RoboMovement.State.INIT, this);
                         target.setCoordinate(-25.5 * direction, 120, angle - 180);
-                        robot.StraightGoToPosition(target, .35,  2,
+                        robot.StraightGoToPosition(target, .4,  2,
                                 this);
                         robot.closeFoundation();
                         sleep(490);

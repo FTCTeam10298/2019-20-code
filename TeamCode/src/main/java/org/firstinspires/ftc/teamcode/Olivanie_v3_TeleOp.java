@@ -71,33 +71,22 @@ public class Olivanie_v3_TeleOp extends OpMode {
 
     double intakePower = 0;
 
-    double fingerL = 1;
-    double fingerR = 0;
-
     double maxVelocityFL = 0;
     double maxVelocityFR = 0;
     double maxVelocityBL = 0;
     double maxVelocityBR = 0;
-
-    double liftPosition = 0;
-    double barPosition = 0;
 
     double liftTimer = 0;
 
     double barTimer = 0;
 
     boolean collectOtronACTIVE     = false;
-    boolean collectOtronSWITCHING  = false;
-    boolean collectOtronREVERSE    = false;
     boolean clawSWITCHING = false;
     boolean clawIsOpen = true;
-    boolean capstone = false;
     boolean stackstate = true;
 
     double  counter = 101;
     int stateLift = 0;
-    int state2 = 0;
-    boolean barIn = true;
     boolean switcherLiftUp = false;
     boolean switcherLiftDown = false;
     boolean switcherDrop = false;
@@ -110,6 +99,7 @@ public class Olivanie_v3_TeleOp extends OpMode {
     boolean barUp = false;
     boolean up = false;
     boolean cap = false;
+    boolean capEngaged = false;
 
     // Code to run once when the driver hits INIT
     @Override
@@ -142,8 +132,7 @@ public class Olivanie_v3_TeleOp extends OpMode {
         time_a = getRuntime();
         telemetry.addData("Loop Time", "%f", dt);
 
-        telemetry.addData("Capstone", capstone);
-        telemetry.addData("Tape Power", "%f", tapePower);
+//        telemetry.addData("Tape Power", "%f", tapePower);
 
         robot.updatePosition();
         telemetry.addData("Odometry L", "%d", robot.leftCollector.getCurrentPosition());
@@ -152,10 +141,10 @@ public class Olivanie_v3_TeleOp extends OpMode {
         telemetry.addData("X Position", "%f", robot.getX());
         telemetry.addData("Y Position", "%f", robot.getY());
         telemetry.addData("Angle", "%f", Math.toDegrees(robot.getWorldAngle_rad()));
-        telemetry.addData("Theta L", "%f", robot.deltaL);
-        telemetry.addData("Theta R", "%f", robot.deltaR);
-        telemetry.addData("Theta C", "%f", robot.deltaC);
-        telemetry.addData("Odometry R Raw", "%d", robot.tape.getCurrentPosition());
+//        telemetry.addData("Delta L", "%f", robot.deltaL);
+//        telemetry.addData("Delta R", "%f", robot.deltaR);
+//        telemetry.addData("Delta C", "%f", robot.deltaC);
+//        telemetry.addData("Odometry R Raw", "%d", robot.tape.getCurrentPosition());
         telemetry.addData("Lift State", "%d", stateLift);
         telemetry.addData("Drop", "%d", drop);
 
@@ -270,12 +259,11 @@ public class Olivanie_v3_TeleOp extends OpMode {
 //        else
 //            robot.collectorOff();
 
-        if (collectOtronACTIVE)
-            robot.kniod.setPosition(1);
+//        if (collectOtronACTIVE)
+//            robot.kniod.setPosition(1);
         // End Collector----------------------------------------------------------------------------
 
         // Kniod------------------------------------------------------------------------------------
-
         if (collectOtronACTIVE)
             up = true;
         else if (gamepad2.right_bumper) {
@@ -303,10 +291,14 @@ public class Olivanie_v3_TeleOp extends OpMode {
         // End Kniod--------------------------------------------------------------------------------
 
         // Claw-------------------------------------------------------------------------------------
-        if (cap)
+        if (cap) {
             robot.capClaw();
-        else if (collectOtronACTIVE)
+            capEngaged = true;
+        }
+        else if (collectOtronACTIVE) {
             robot.openClaw();
+            capEngaged = false;
+        }
         else {
             if (gamepad2.x && !clawSWITCHING) {
                 clawSWITCHING = true;
@@ -314,9 +306,11 @@ public class Olivanie_v3_TeleOp extends OpMode {
                 if (clawIsOpen) {
                     clawIsOpen = false;
                     robot.closeClaw();
+                    capEngaged = false;
                 } else {
                     clawIsOpen = true;
                     robot.openClaw();
+                    capEngaged = false;
                 }
                 clawSWITCHING = false;
             }
@@ -339,16 +333,12 @@ public class Olivanie_v3_TeleOp extends OpMode {
         // End Foundation---------------------------------------------------------------------------
 
         // Capstone---------------------------------------------------------------------------------
-
-        if (gamepad1.b && !switcherCapstone)
-            switcherCapstone = true;
-        else if (!gamepad1.b && switcherCapstone) {
-            cap = !cap;
+        if (gamepad1.x) {
+            cap = true;
             switcherCapstone = false;
         }
         if (gamepad2.x)
             cap = false;
-
         // End Capstone-----------------------------------------------------------------------------
 
         // Tape Measure-----------------------------------------------------------------------------
@@ -362,12 +352,11 @@ public class Olivanie_v3_TeleOp extends OpMode {
         // End Tape Measure-------------------------------------------------------------------------
 
         // 4-Bar------------------------------------------------------------------------------------
-
-        if (barUp) {
+        if (barUp && !capEngaged && !cap) {
             robot.set4Bar(.83);
             barTimer = 0;
         }
-        else if (barTimer < .5)
+        else if (barTimer < .5 && !capEngaged && !cap)
             barTimer += dt;
         else {
             if (Math.abs(robot.lift.getCurrentPosition() - robot.lift.getTargetPosition()) < 1000) {
@@ -379,11 +368,9 @@ public class Olivanie_v3_TeleOp extends OpMode {
                     robot.place4BarHigh();
             }
         }
-
         // End 4-Bar--------------------------------------------------------------------------------
 
         // Lift-------------------------------------------------------------------------------------
-
         if ((gamepad2.dpad_up || gamepad1.dpad_up) && !switcherLiftUp && !switcherLiftDown)
             switcherLiftUp = true;
         else if ((gamepad2.dpad_down || gamepad1.dpad_down) && !switcherLiftUp && !switcherLiftDown)
@@ -444,12 +431,10 @@ public class Olivanie_v3_TeleOp extends OpMode {
             robot.lift.setPower(0);
         else
             robot.lift.setPower(1);
-        telemetry.addData("Lift motor power: ", robot.lift.getPower());
-
+//        telemetry.addData("Lift motor power: ", robot.lift.getPower());
         // End Lift---------------------------------------------------------------------------------
 
         // Eject------------------------------------------------------------------------------------
-
         if ((gamepad1.y || gamepad2.y) && !switcherEject)
             switcherEject = true;
         else if (!(gamepad1.y || gamepad2.y) && switcherEject) {

@@ -289,8 +289,7 @@ public class Olivanie_v3_TeleOp extends OpMode {
         // End Capstone-----------------------------------------------------------------------------
 
         // Tape Measure-----------------------------------------------------------------------------
-        tapePower = Range.clip(gamepad2.right_trigger - gamepad2.left_trigger, -1,
-                1);
+        tapePower = Range.clip(gamepad2.right_trigger - gamepad2.left_trigger, -1, 1);
         robot.tape.setPower(-tapePower);
         // End Tape Measure-------------------------------------------------------------------------
 
@@ -312,8 +311,10 @@ public class Olivanie_v3_TeleOp extends OpMode {
 
         if ((gamepad1.dpad_up || gamepad2.dpad_up) && !switcherLiftUp && !switcherLiftDown)
             switcherLiftUp = true;
+
         else if ((gamepad1.dpad_down || gamepad2.dpad_down) && !switcherLiftUp && !switcherLiftDown)
             switcherLiftDown = true;
+
         else if (!gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad2.dpad_up &&
                 !gamepad2.dpad_down && switcherLiftUp) {
             stateLift++;
@@ -321,6 +322,7 @@ public class Olivanie_v3_TeleOp extends OpMode {
                 stateLift--;
             switcherLiftUp = false;
         }
+
         else if (!gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad2.dpad_up &&
                 !gamepad2.dpad_down && switcherLiftDown) {
             stateLift--;
@@ -332,6 +334,7 @@ public class Olivanie_v3_TeleOp extends OpMode {
         robot.lift.setTargetPosition(robot.LIFTPOSITION[stateLift]);
         if (Math.abs(robot.lift.getCurrentPosition() - robot.lift.getTargetPosition()) < 100)
             robot.lift.setPower(0);
+
         else
             robot.lift.setPower(1);
         telemetry.addData("Lift motor power: ", robot.lift.getPower());

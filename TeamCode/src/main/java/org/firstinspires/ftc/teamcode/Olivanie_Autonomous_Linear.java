@@ -777,8 +777,7 @@ public class Olivanie_Autonomous_Linear extends LinearOpMode implements FtcMenu.
         }
 
         @Override
-        public Mat processFrame(Mat input)
-        {
+        public Mat processFrame(Mat input) {
             contoursList.clear();
             /*
              * This pipeline finds the contours of yellow blobs such as the Gold Mineral

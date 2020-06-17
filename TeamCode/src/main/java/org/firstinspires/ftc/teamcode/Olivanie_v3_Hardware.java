@@ -72,7 +72,7 @@ public class Olivanie_v3_Hardware
     Global_Robot globalRobot = new Global_Robot(0, 0, 180);
 
     /* Local OpMode members. */
-    HardwareMap hwMap              = null;
+    HardwareMap hwMap = null;
 
     /* Constructor */
     public Olivanie_v3_Hardware() {

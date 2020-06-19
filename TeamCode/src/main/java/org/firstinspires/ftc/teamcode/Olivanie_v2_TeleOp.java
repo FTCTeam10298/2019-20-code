@@ -321,11 +321,11 @@ public class Olivanie_v2_TeleOp extends OpMode {
             capstone = false;
         }
         if (state2 == 1) {
-            if (robot.markerDumper.getPosition() > 0.2)
-                robot.markerDumper.setPosition(robot.DROPPED);
-            else
-                robot.markerDumper.setPosition(robot.HELD);
-            state2 = 0;
+//            if (robot.markerDumper.getPosition() > 0.2)
+//                robot.markerDumper.setPosition(robot.DROPPED);
+//            else
+//                robot.markerDumper.setPosition(robot.HELD);
+//            state2 = 0;
         }
         // End Capstone
 

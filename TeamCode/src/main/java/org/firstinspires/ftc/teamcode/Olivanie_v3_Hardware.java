@@ -14,6 +14,7 @@ import org.openftc.revextensions2.RevBulkData;
 /**
  * This is NOT an opmode.
  * This class is used to define all the specific hardware for a single robot.
+ * This class is extended by RoboMovement, which has all of the autonomous drive functions as well.
  */
 
 public class Olivanie_v3_Hardware
@@ -32,31 +33,32 @@ public class Olivanie_v3_Hardware
     public Servo foundation = null;
     public Servo left4Bar = null;
     public Servo right4Bar = null;
-    public Servo markerDumper = null;
     public Servo leftSideClaw = null;
     public Servo rightSideClaw = null;
     public Servo leftFinger = null;
     public Servo rightFinger = null;
+    public Servo kniod = null;
 
-    public static final double HELD = 0.32;
-    public static final double DROPPED = 0.04;
-    public static final double RELEASEDL = 0;
-    public static final double GRABBEDL = 1;
-    public static final double RELEASEDR = 1;
-    public static final double GRABBEDR = 0;
-    public static final double FINGERGRABBEDR = 1;
-    public static final double FINGERRELEASER = 0.2;
-    public static final double FINGERGRABBEDL = 0;
-    public static final double FINGERRELEASEL = 0.8;
-    public static final int BLOCK1 = -1000;
-    public static final int BLOCK2 = -2000;
-    public static final int BLOCK3 = -3000;
-    public static final int BLOCK4 = -4000;
-    public static final int BLOCK5 = -5000;
-    public static final int BLOCK6 = -6000;
-    public static final int BLOCK7 = -7000;
-    public static final int BLOCK8 = -8000;
-    public static final int [] LIFTPOSITION = {0, BLOCK1, BLOCK2, BLOCK3, BLOCK4, BLOCK5, BLOCK6, BLOCK7, BLOCK8};
+    public static final double HELDL = .3;
+    public static final double DROPPEDL = .65;
+    public static final double HELDR = .7;
+    public static final double DROPPEDR = .35;
+    public static final double FINGERGRABBEDR = 0.8;
+    public static final double FINGERRELEASER = 0.3;
+    public static final double FINGERGRABBEDL = 0.2;
+    public static final double FINGERRELEASEL = 0.7;
+    public static final int BLOCK01 = -1000;
+    public static final int BLOCK02 = -2300;
+    public static final int BLOCK03 = -3400;
+    public static final int BLOCK04 = -1000;
+    public static final int BLOCK05 = -2100;
+    public static final int BLOCK06 = -3200;
+    public static final int BLOCK07 = -4300;
+    public static final int BLOCK08 = -5400;
+    public static final int BLOCK09 = -6500;
+    public static final int BLOCK10 = -7700;
+    public static final int [] LIFTPOSITION = {0, BLOCK01, BLOCK02, BLOCK03, BLOCK04, BLOCK05,
+            BLOCK06, BLOCK07, BLOCK08, BLOCK09, BLOCK10};
 
     double deltaL = 0;
     double deltaC = 0;
@@ -99,13 +101,11 @@ public class Olivanie_v3_Hardware
         foundation = hwMap.servo.get("foundation");
         left4Bar = hwMap.servo.get("left 4 bar");
         right4Bar = hwMap.servo.get("right 4 bar");
-        markerDumper = hwMap.servo.get("son of brian");
         leftSideClaw = hwMap.servo.get("left side claw");
         rightSideClaw = hwMap.servo.get("right side claw");
         leftFinger = hwMap.servo.get("left finger");
         rightFinger = hwMap.servo.get("right finger");
-
-        // Define and initialize sensors
+        kniod = hwMap.servo.get("kniod");
 
         // Set direction for all motors
         leftDriveF.setDirection(DcMotor.Direction.REVERSE);
@@ -131,11 +131,11 @@ public class Olivanie_v3_Hardware
         openClaw();
         openFoundation();
         close4Bar();
-        markerDumper.setPosition(HELD);
-        leftSideClaw.setPosition(RELEASEDL);
-        rightSideClaw.setPosition(RELEASEDR);
-        leftFinger.setPosition(FINGERRELEASEL);
-        rightFinger.setPosition(FINGERRELEASER);
+        kniod.setPosition(.1);
+        leftSideClaw.setPosition(0);
+        rightSideClaw.setPosition(1);
+        leftFinger.setPosition(FINGERGRABBEDL);
+        rightFinger.setPosition(FINGERGRABBEDR);
 
         // Set motors to use brake mode
         leftDriveF.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -170,23 +170,12 @@ public class Olivanie_v3_Hardware
         // Lift uses encoder
         lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        // PIDF
-        //leftDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        //rightDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        //leftDriveB.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        //rightDriveB.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
-        //leftDriveF.setPositionPIDFCoefficients(10);
-        //rightDriveF.setPositionPIDFCoefficients(10);
-        //leftDriveB.setPositionPIDFCoefficients(10);
-        //rightDriveB.setPositionPIDFCoefficients(10);
-
         // Bulk Data
         expansionHub = hwMap.get(ExpansionHubEx.class, "Expansion Hub 5");
 
         lOWheel = (ExpansionHubMotor) hwMap.dcMotor.get("left collector");
         cOWheel = (ExpansionHubMotor) hwMap.dcMotor.get("tape");
         rOWheel = (ExpansionHubMotor) hwMap.dcMotor.get("left drive b");
-
     }
 
     /**
@@ -207,44 +196,84 @@ public class Olivanie_v3_Hardware
         rightDriveB.setPower(powerRB);
     }
 
+    /**
+     * Sets the location of the global robot in the field.
+     * @param x The x coordinate in inches.
+     * @param y The y coordinate in inches.
+     * @param angle The angle in radians.
+     */
     public void setGlobalRobot (double x, double y, double angle) {
         setX(x);
         setY(y);
         setAngle(angle);
     }
 
+    /**
+     * Sets the x coordinate of the global robot.
+     * @param x The x coordinate in inches.
+     */
     public void setX (double x) {
         globalRobot.setX(x);
     }
 
+    /**
+     * Sets the y coordinate of the global robot.
+     * @param y The y coordinate in inches.
+     */
     public void setY (double y) {
         globalRobot.setY(y);
     }
 
+    /**
+     * Sets the angle of the global robot.
+     * @param angle The angle in radians.
+     */
     public void setAngle (double angle) {
         globalRobot.setAngle(angle);
     }
 
+    /**
+     * Gets the x coordinate of the robot.
+     * @return The x coordinate in inches.
+     */
     public double getX() {
         return globalRobot.getX();
     }
 
+    /**
+     * Gets the y coordinate of the robot.
+     * @return The y coordinate in inches.
+     */
     public double getY() {
         return globalRobot.getY();
     }
 
+    /**
+     * Gets the global angle in radians.
+     * @return The angle in question.
+     */
     public double getWorldAngle_rad () {
         return globalRobot.getAngle();
     }
 
+    /**
+     * Sets the position of the foundation moving servo to grab the foundation.
+     */
     public void closeFoundation() {
         foundation.setPosition(1);
     }
 
+    /**
+     * Sets the position of the foundation moving servo to release the foundation.
+     */
     public void openFoundation() {
         foundation.setPosition(0.35);
     }
 
+    /**
+     * Run the collector motors at a given power.
+     * @param power The power to run the collector.
+     */
     public void runCollector (double power) {
         leftCollector.setPower(power);
         rightCollector.setPower(power);
@@ -284,27 +313,41 @@ public class Olivanie_v3_Hardware
      * Swings the 4 bar in to grab a stone
      */
     public void close4Bar () {
-        set4Bar(0);
+        set4Bar(1);
     }
 
     /**
-     * Swings the 4 bar out to place a stone.
+     * Swings the 4 bar out to place a stone for the first 3 stones.
      */
-    public void place4Bar () {
-        set4Bar(1);
+    public void place4BarLow() {
+        set4Bar(.05);
+    }
+
+    /**
+     * Swings the 4 bar out to place a stone for stone 4 and above.
+     */
+    public void place4BarHigh() {
+        set4Bar(.45);
     }
 
     /**
      * Opens the claw to place a stone.
      */
     public void openClaw () {
-        claw.setPosition(.35);
+        claw.setPosition(.6);
     }
 
     /**
      * Closes the claw to pick up a stone.
      */
-    public void closeClaw() {
+    public void closeClaw () {
+        claw.setPosition(0);
+    }
+
+    /**
+     * Opens the claw enough to trigger the capstone
+     */
+    public void capClaw () {
         claw.setPosition(1);
     }
 
@@ -332,8 +375,8 @@ public class Olivanie_v3_Hardware
         // Calculate theoretical values for motor powers using transformation matrix
         double fl = vY + vX - vA;
         double bl = vY - vX - vA;
-        double br = vY + vX + vA;
-        double fr = vY - vX + vA;
+        double br = vY - vX + vA;
+        double fr = vY + vX + vA;
         // Find the largest magnitude of power and the average magnitude of power to scale down to
         // maxpower and up to minpower
         double max = Math.abs(fl);
@@ -397,9 +440,9 @@ public class Olivanie_v3_Hardware
      */
     public void updatePosition () {
         bulkData = expansionHub.getBulkInputData();
-        double currentL = (double) -bulkData.getMotorCurrentPosition(lOWheel) / 1144.0;
+        double currentL = (double) bulkData.getMotorCurrentPosition(lOWheel) / 1144.0;
         double currentC = (double) bulkData.getMotorCurrentPosition(cOWheel) / 1144.0;
-        double currentR = (double) -bulkData.getMotorCurrentPosition(rOWheel) / 1144.0;
+        double currentR = (double) bulkData.getMotorCurrentPosition(rOWheel) / 1144.0;
         deltaL = currentL - previousL;
         deltaC = currentC - previousC;
         deltaR = currentR - previousR;

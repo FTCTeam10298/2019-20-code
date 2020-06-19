@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
+/**
+ * This class holds the Coordinate of the robot and also has a method to update the robot's position
+ * given changes in the odometry wheels. The hardware program has an instance of this class.
+ */
 public class Global_Robot extends Coordinate{
     double ynot = 0.315; //.315
     double xnot = 14.756661709/2.0;

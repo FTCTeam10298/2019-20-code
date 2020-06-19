@@ -123,9 +123,9 @@ class KOlivanieV3TeleOp: OpMode() {
         telemetry.addData("Tape Power", "%f", tapePower);
 
         robot.updatePosition();
-        telemetry.addData("Odometry L", "%d", robot.leftCollector.getCurrentPosition());
-        telemetry.addData("Odometry R", "%d", robot.leftDriveB.getCurrentPosition());
-        telemetry.addData("Odometry C", "%d", robot.tape.getCurrentPosition());
+        telemetry.addData("Odometry L", "%d", robot.leftCollector?.getCurrentPosition());
+        telemetry.addData("Odometry R", "%d", robot.leftDriveB?.getCurrentPosition());
+        telemetry.addData("Odometry C", "%d", robot.tape?.getCurrentPosition());
         telemetry.addData("X Position", "%f", robot.getX());
         telemetry.addData("Y Position", "%f", robot.getY());
         telemetry.addData("Angle", "%f", Math.toDegrees(robot.getWorldAngle_rad()));
@@ -267,9 +267,9 @@ class KOlivanieV3TeleOp: OpMode() {
         }
         if (state2 == 1) {
             if (robot.markerDumper!!.getPosition() > 0.2)
-                robot.markerDumper?.setPosition(robot.DROPPED)
+                robot.markerDumper?.setPosition(KOlivanieV3Hardware.DROPPED)
             else
-                robot.markerDumper?.setPosition(robot.HELD)
+                robot.markerDumper?.setPosition(KOlivanieV3Hardware.HELD)
             state2 = 0
         }
         // End Capstone-----------------------------------------------------------------------------
@@ -303,7 +303,7 @@ class KOlivanieV3TeleOp: OpMode() {
         }else if (!gamepad1.dpad_up && !gamepad1.dpad_down && !gamepad2.dpad_up &&
                 !gamepad2.dpad_down && switcherLiftUp) {
             stateLift++
-            if (stateLift == robot.LIFTPOSITION.length) {
+            if (stateLift == KOlivanieV3Hardware.LIFTPOSITION.size) {
                 stateLift--
                 switcherLiftUp = false
             }
@@ -316,12 +316,12 @@ class KOlivanieV3TeleOp: OpMode() {
             }
         }
 
-        robot.lift!!.setTargetPosition(robot.LIFTPOSITION[stateLift]);
-        if (Math.abs(robot!!.lift.getCurrentPosition() - robot!!.lift.getTargetPosition()) < 100)
+        robot.lift!!.setTargetPosition(KOlivanieV3Hardware.LIFTPOSITION[stateLift]);
+        if (robot!!.lift?.getCurrentPosition()?.minus(robot!!.lift?.getTargetPosition()!!)?.let { Math.abs(it) }!! < 100)
             robot.lift!!.setPower(0.0)
         else
-            robot!!.lift.setPower(1.0)
-        telemetry.addData("Lift motor power: ", robot!!.lift.getPower())
+            robot!!.lift?.setPower(1.0)
+        telemetry.addData("Lift motor power: ", robot!!.lift?.getPower())
 
         // End Lift---------------------------------------------------------------------------------
 

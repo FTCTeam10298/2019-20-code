@@ -1,20 +1,16 @@
 package org.firstinspires.ftc.teamcode
 
-class KWayPoint: Point() {
-
-    fun WayPoint() {
-        this(0, 0, 0, 0)
-    }
-
-    fun WayPoint(angleDegre: Double) {
-        this(0, 0, angleDegre, 0)
-    }
+class KWayPoint(xCoordinate: Double, yCoordinate: Double, angleDegree: Double, index: Double): Point() {
 
     // Index 3: index
-    fun WayPoint(xCoordinate: Double, yCoordinate: Double, angleDegree: Double, index: Double) {
-        super.(xCoordinate, yCoordinate, angleDegree)
+    init {
         addToPoint(index)
     }
+
+    constructor(): this(0.0, 0.0, 0.0, 0.0)
+
+    constructor(angleDegree: Double): this(0.0, 0.0, angleDegree, 0.0)
+
 
     fun getIndex(): Double {
         return super.getPoint().get(3)

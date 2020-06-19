@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode
 
  class KSkystoneFieldMap {
 
-    private var field = Int [144] [144]
+    private var field: Array<Array<Int>> = Array(144) {_ -> Array(144) {_ ->  0} }
     private var x: Int= 0
     private var y: Int= 0
 
@@ -26,44 +26,42 @@ package org.firstinspires.ftc.teamcode
         }
 
         //creating empty field
-        for (i: Int= 0; i < field.length; i++) {
-            for (j: Int= 0; j < field[i].length; j++) {
+        for (i in (0..field.size)) {
+            for (j in (0..field[i].size)) {
                 field[i][j] = 0
             }
         }
 
         //filling in foundations
-        for (i: Int = 4; i < 39; i++) {
-            for (int j = 47; j < 66; j++) {
-            field[i][j] = 3;
-        }
-
-            for (int j = 78; j < 97; j++) {
-            field[i][j] = 3;
-        }
+        for (i in (0..39)) {
+            for (j in (47..66)) {
+                field[i][j] = 3
+            }
+            for (j in (78..97)) {
+                field[i][j] = 3
+            }
         }
 
         //filling in bridge posts
-        for (int i = 63; i < 81; i++) {
-            for (int j = 47; j < 48; j++){
-            field[i][j] = 3;
-        }
+        for (i in (63..81)) {
+            for (j in (47..48)){
+                field[i][j] = 3
+            }
 
-            for (int j = 96; j < 97; j++){
-            field[i][j] = 3;
-        }
+            for (j in (96..97)){
+                field[i][j] = 3
+            }
         }
 
         //filling in quarry
-        for (int i = 95; i < field.length; i++) {
-            for (int j = 47; j < 52; j++){
-            field[i][j] = 3;
-        }
+        for (i in (95..field.size)) {
+            for (j in (47..52)){
+                field[i][j] = 3
+            }
 
-            for (int j = 92; j < 97; j++){
-            field[i][j] = 3;
-        }
-
+            for (j in (92..97)){
+                field[i][j] = 3
+            }
         }
 
         //checking coordinate legality

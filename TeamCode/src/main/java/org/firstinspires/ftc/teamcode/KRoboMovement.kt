@@ -40,9 +40,10 @@ class KRoboMovement: KOlivanieV3Hardware() {
      * @param state The current State of the robot.
      * @return The new State of the robot.
      */
-    fun goToPosition(target: Coordinate, maxPower: Double, distancePID: PID,
-                     anglePID: PID, distanceMin: Double, angleDegMin: Double, state: State): State {
+    fun goToPosition(target: KCoordinate, maxPower: Double, distancePID: PID,
+                     anglePID: PID, distanceMin: Double, angleDegMin: Double, iState: State): State {
         // Start by setting all speeds and error values to 0 and moving into the next state
+        var state = iState
         when (state) {
             State.INIT -> {
                 setSpeedZero()
@@ -56,14 +57,14 @@ class KRoboMovement: KOlivanieV3Hardware() {
             }
             State.BUSY -> {
                 // Set the current position
-                current.setCoordinate(globalRobot.x, globalRobot.y, Math.toDegrees(globalRobot.angle))
+                current.setCoordinate(globalRobot.getX(), globalRobot.getY(), Math.toDegrees(globalRobot.getAngle()))
                 // Find the error in distance and angle, ensuring angle does not exceed 2*Math.PI
-                var distanceError: Double= kotlin.math.hypot(current.x - target.x, current.y - target.y)
-                var angleError: Double= (target.angle - current.angle) % (2*PI)
+                var distanceError: Double= kotlin.math.hypot(current.x - target.getX(), current.y - target.getY())
+                var angleError: Double= (target.getY() - current.angle) % (2*PI)
                 if (angleError > PI)
                     angleError -= 2*PI
                 // Find the absolute angle error
-                var absAngleError: Double= atan2(target.y - current.y, target.x - current.x)
+                var absAngleError: Double= atan2(target.getY() - current.y, target.getX() - current.x)
                 - current.getAngle();
                 // Convert the largest allowed error into radians to use in calculations
                 var angleMin: Double= Math.toRadians(angleDegMin)
@@ -78,11 +79,11 @@ class KRoboMovement: KOlivanieV3Hardware() {
                 var dy: Double= erry * distancePID.propo
                 var da: Double= (angleError * anglePID.propo)
                 dashboard = HalDashboard.getInstance()
-                dashboard.displayPrintf(5, "Target Robot X, Error X: %f, %f", target.x, errx)
-                dashboard.displayPrintf(6, "Target Robot Y, Error Y: %f, %f", target.y, erry)
+                dashboard.displayPrintf(5, "Target Robot X, Error X: %f, %f", target.getX(), errx)
+                dashboard.displayPrintf(6, "Target Robot Y, Error Y: %f, %f", target.getY(), erry)
                 dashboard.displayPrintf(7, "Distance Error: %f", distanceError)
                 dashboard.displayPrintf(8, "Current X,Y,A: %f, %f, %f", current.x,current.y,Math.toDegrees(current.angle))
-                dashboard.displayPrintf(9, "angleError, target angle: %f, %f", Math.toDegrees(angleError), Math.toDegrees(target.angle))
+                dashboard.displayPrintf(9, "angleError, target angle: %f, %f", Math.toDegrees(angleError), Math.toDegrees(target.getAngle()))
                 dashboard.displayPrintf(10, "absAngleError: %f", Math.toDegrees(absAngleError))
                 dashboard.displayPrintf(11, "Raw L, Raw C, Raw R: %d, %d, %d", rightCollector?.currentPosition, leftCollector?.currentPosition, tape?.currentPosition)
 

@@ -4,27 +4,17 @@ import java.util.ArrayList
 import kotlin.math.abs
 import kotlin.math.hypot
 
-abstract class KPoint {
+abstract class KPoint(xCoordinate: Double, yCoordinate: Double, angleDegrees: Double) {
+
+    private var point: ArrayList<Double> = ArrayList<Double>()
+    open val MINIMUM_DISTANCE_AWAY: Double= 1.0
+
 
     // Index 0: x coordinate
     // Index 1: y coordinate
     // Index 2: angle (degrees)
-    var point: ArrayList<Double> = ArrayList<Double>()
-    open val MINIMUM_DISTANCE_AWAY: Double= 1.0
 
-    fun Point() {
-        this (0, 0, 0)
-    }
-
-    fun Point(angleDegrees: Double) {
-        this (0, 0, angleDegrees)
-    }
-
-    fun Point(xCoordinate: Double, yCoordinate: Double) {
-        this (xCoordinate, yCoordinate, 0)
-    }
-
-    fun Point(xCoordinate: Double, yCoordinate: Double, angleDegrees: Double) {
+    init {
         point.add(xCoordinate)
         point.add(yCoordinate)
 
@@ -35,20 +25,27 @@ abstract class KPoint {
         }
     }
 
+    constructor(): this (0.0, 0.0, 0.0)
+
+    constructor(angleDegrees: Double): this (0.0, 0.0, angleDegrees)
+
+    constructor(xCoordinate: Double, yCoordinate: Double): this (xCoordinate, yCoordinate, 0.0)
+
+
     fun getPoint(): ArrayList<Double> {
         return point
     }
 
     fun getX(): Double {
-        return point[0]
+        return point.get(0)
     }
 
     fun getY(): Double {
-        return point[1]
+        return point.get(1)
     }
 
     fun getAngle(): Double {
-        return point[2]
+        return point.get(2)
     }
 
     fun getMinimumDistanceAway(): Double {
@@ -89,7 +86,7 @@ abstract class KPoint {
         return hypot(deltaX, deltaY)
     }
 
-    open override fun toString(): Double {
-        return (point[0] + ", " + point[1] + ", " + point[2])
+    open override fun toString(): String {
+        return ("$point(0), $point[1], $point[2]")
     }
 }

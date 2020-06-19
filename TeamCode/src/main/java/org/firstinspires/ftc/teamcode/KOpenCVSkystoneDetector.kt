@@ -21,7 +21,6 @@ import org.openftc.easyopencv.OpenCvInternalCamera;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -39,31 +38,31 @@ import java.util.List;
 @Autonomous(name= "opencvSkystoneDetector", group="Sky autonomous")
 //@Disabled//comment out this line before using
 class KOpenCVSkystoneDetector: LinearOpMode() {
-    var runtime: ElapsedTime= ElapsedTime()
+    var runtime: ElapsedTime = ElapsedTime()
+    companion object {
+        //0 means skystone, 1 means yellow stone
+        //-1 for debug, but we can keep it like this because if it works, it should change to either 0 or 255
+        private var valMid: Double = 0.0
+        private var valLeft: Double = 0.0
+        private var valRight: Double = 0.0
 
-    //0 means skystone, 1 means yellow stone
-    //-1 for debug, but we can keep it like this because if it works, it should change to either 0 or 255
-    private var valMid: Double= 0.0
-    private var valLeft: Double= 0.0
-    private var valRight: Double= 0.0
+        var rectHeight: Float = .6f / 8f
+        var rectWidth: Float = 1.5f / 8f
 
-    var rectHeight: Float= .6f/8f
-    var rectWidth: Float= 1.5f/8f
+        var offsetX: Float = 0f / 8f//changing this moves the three rects and the three circles left or right, range : (-2, 2) not inclusive
+        var offsetY: Float = 0f / 8f//changing this moves the three rects and circles up or down, range: (-4, 4) not inclusive
 
-    var offsetX: Float= 0f/8f//changing this moves the three rects and the three circles left or right, range : (-2, 2) not inclusive
-    var offsetY: Float= 0f/8f//changing this moves the three rects and circles up or down, range: (-4, 4) not inclusive
-
-    var midPos: ()->Float= {4f/8f+offsetX, 4f/8f+offsetY} //0 = col, 1 = row
-    var leftPos: ()->Float= {2f/8f+offsetX, 4f/8f+offsetY}
-    var rightPos: ()->Float= {6f/8f+offsetX, 4f/8f+offsetY}
-    //moves all rectangles right or left by amount. units are in ratio to monitor
+        var midPos = arrayOf(4f / 8f + offsetX, 4f / 8f + offsetY) //0 = col, 1 = row
+        var leftPos = arrayOf(2f / 8f + offsetX, 4f / 8f + offsetY)
+        var rightPos = arrayOf(6f / 8f + offsetX, 4f / 8f + offsetY)
+        //moves all rectangles right or left by amount. units are in ratio to monitor
+    }
 
     val rows: Int= 640
     val cols: Int= 480
 
-    var webcam: OpenCvCamera=
-
-    override fun runOpMode(): InterruptedException {
+    @Throws(InterruptedException::class)
+    override fun runOpMode() {
 
         /*
          * Instantiate an OpenCvCamera object for the camera we'll be using.
@@ -75,8 +74,8 @@ class KOpenCVSkystoneDetector: LinearOpMode() {
          * the RC phone). If no camera monitor is desired, use the alternate
          * single-parameter constructor instead (commented out below)
          */
-        var cameraMonitorViewId: Int= hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.packageName)
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class<>, "Webcam 1"), cameraMonitorViewId)
+        var cameraMonitorViewId: Int = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.packageName)
+        var webcam: OpenCvCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName::class.java, "Webcam 1"), cameraMonitorViewId)
 
         webcam.openCameraDevice()//open camera
         webcam.setPipeline(StageSwitchingPipeline())//different stages
@@ -115,7 +114,7 @@ class KOpenCVSkystoneDetector: LinearOpMode() {
         var yCbCrChan2Mat: Mat= Mat()
         var thresholdMat: Mat= Mat()
         var all: Mat= Mat()
-        var contoursList: List<MatOfPoint> = ArrayList<>()
+        var contoursList: MutableList<MatOfPoint> = ArrayList()
 
         enum class Stage {//color difference. greyscale
             Detection,//includes outlines
@@ -136,7 +135,7 @@ class KOpenCVSkystoneDetector: LinearOpMode() {
 
             var nextStageNum: Int= currentStageNum + 1
 
-            if(nextStageNum >= stages.length) {
+            if(nextStageNum >= stages.size) {
                 nextStageNum = 0;
             }
 
@@ -172,11 +171,11 @@ class KOpenCVSkystoneDetector: LinearOpMode() {
             var midSum: Double= 0.0
             var leftSum: Double= 0.0
             var rightSum: Double= 0.045
-            for (Int i = - 10; i < 10; i++) run {
-                for (int j = -10; j < 10; j++) {
-                    var pixMid = thresholdMat.get((Int)(input.rows() * midPos[1]) + i, (Int)(input.cols() * midPos[0]) + j)
-                    var pixLeft = thresholdMat.get((Int)(input.rows() * leftPos[1]) + i, (Int)(input.cols() * leftPos[0]) + j)
-                    var pixRight = thresholdMat.get((Int)(input.rows() * rightPos[1]) + i, (Int)(input.cols() * rightPos[0]) + j)
+            for (i in (-10..10)) {
+                for (j in (-10..10)) {
+                    var pixMid = thresholdMat.get((input.rows() * midPos[1]).toInt() + i, (input.cols() * midPos[0]).toInt() + j)
+                    var pixLeft = thresholdMat.get((input.rows() * leftPos[1]).toInt() + i, (input.cols() * leftPos[0]).toInt() + j)
+                    var pixRight = thresholdMat.get((input.rows() * rightPos[1]).toInt() + i, (input.cols() * rightPos[0]).toInt() + j)
                     midSum += pixMid[0]
                     leftSum += pixLeft[0]
                     rightSum += pixRight[0]
@@ -188,9 +187,9 @@ class KOpenCVSkystoneDetector: LinearOpMode() {
             valRight = rightSum / 400
 
             //create three points
-            var pointMid: Point= Point((Int)(input.cols()* midPos[0]), (Int)(input.rows()* midPos[1]))
-            var pointLeft: Point= Point((Int)(input.cols()* leftPos[0]), (Int)(input.rows()* leftPos[1]))
-            var pointRight: Point= Point((Int)(input.cols()* rightPos[0]), (Int)(input.rows()* rightPos[1]))
+            var pointMid: Point= Point((input.cols()* midPos[0]).toDouble(), (input.rows()* midPos[1]).toDouble())
+            var pointLeft: Point= Point((input.cols()* leftPos[0]).toDouble(), (input.rows()* leftPos[1]).toDouble())
+            var pointRight: Point= Point((input.cols()* rightPos[0]).toDouble(), (input.rows()* rightPos[1]).toDouble())
 
             //draw circles on those points
             Imgproc.circle(all, pointMid,10, Scalar( 255.0, 0.0, 0.0 ),1 )//draws circle
@@ -201,12 +200,12 @@ class KOpenCVSkystoneDetector: LinearOpMode() {
             Imgproc.rectangle(//1-3
                     all,
                     Point(
-                            input.cols()*(leftPos[0])-10,
-                            input.rows()*(leftPos[1])-10
+                            input.cols()*(leftPos[0])-10.toDouble(),
+                            input.rows()*(leftPos[1])-10.toDouble()
                     ),
                     Point(
-                            input.cols()*(leftPos[0])+10,
-                            input.rows()*(leftPos[1])+10
+                            input.cols()*(leftPos[0])+10.toDouble(),
+                            input.rows()*(leftPos[1])+10.toDouble()
                     ),
                     Scalar(0.0, 255.0, 255.0),
                     3)
@@ -214,12 +213,12 @@ class KOpenCVSkystoneDetector: LinearOpMode() {
             Imgproc.rectangle(//3-5
                     all,
                     Point(
-                            input.cols()*(midPos[0])-10,
-                            input.rows()*(midPos[1])-10
+                            input.cols()*(midPos[0])-10.toDouble(),
+                            input.rows()*(midPos[1])-10.toDouble()
                     ),
                     Point(
-                            input.cols()*(midPos[0])+10,
-                            input.rows()*(midPos[1])+10
+                            input.cols()*(midPos[0])+10.toDouble(),
+                            input.rows()*(midPos[1])+10.toDouble()
                     ),
                     Scalar(0.0, 255.0, 255.0),
                     3)
@@ -227,12 +226,12 @@ class KOpenCVSkystoneDetector: LinearOpMode() {
             Imgproc.rectangle(//5-7
                     all,
                     Point(
-                            input.cols()*(rightPos[0])-10,
-                            input.rows()*(rightPos[1])-10
+                            input.cols()*(rightPos[0])-10.toDouble(),
+                            input.rows()*(rightPos[1])-10.toDouble()
                     ),
                     Point(
-                            input.cols()*(rightPos[0])+10,
-                            input.rows()*(rightPos[1])+10
+                            input.cols()*(rightPos[0])+10.toDouble(),
+                            input.rows()*(rightPos[1])+10.toDouble()
                     ),
                     Scalar(0.0, 255.0, 255.0),
                     3)
@@ -241,12 +240,12 @@ class KOpenCVSkystoneDetector: LinearOpMode() {
             Imgproc.rectangle(//1-3
                     all,
                     Point(
-                            input.cols()*(leftPos[0]-rectWidth/2),
-                            input.rows()*(leftPos[1]-rectHeight/2)
+                            input.cols()*(leftPos[0]-rectWidth/2).toDouble(),
+                            input.rows()*(leftPos[1]-rectHeight/2).toDouble()
                     ),
                     Point(
-                            input.cols()*(leftPos[0]+rectWidth/2),
-                            input.rows()*(leftPos[1]+rectHeight/2)
+                            input.cols()*(leftPos[0]+rectWidth/2).toDouble(),
+                            input.rows()*(leftPos[1]+rectHeight/2).toDouble()
                     ),
                     Scalar(0.0, 255.0, 0.0),
                     3)
@@ -254,11 +253,12 @@ class KOpenCVSkystoneDetector: LinearOpMode() {
             Imgproc.rectangle(//3-5
                     all,
                     Point(
-                            input.cols()*(midPos[0]-rectWidth/2),
-                            input.rows()*(midPos[1]-rectHeight/2)),
+                            input.cols()*(midPos[0]-rectWidth/2).toDouble(),
+                            input.rows()*(midPos[1]-rectHeight/2).toDouble()
+                    ),
                     Point(
-                            input.cols()*(midPos[0]+rectWidth/2),
-                            input.rows()*(midPos[1]+rectHeight/2)
+                            input.cols()*(midPos[0]+rectWidth/2).toDouble(),
+                            input.rows()*(midPos[1]+rectHeight/2).toDouble()
                     ),
                     Scalar(0.0, 255.0, 0.0),
                     3)
@@ -266,24 +266,22 @@ class KOpenCVSkystoneDetector: LinearOpMode() {
             Imgproc.rectangle(//5-7
                     all,
                     Point(
-                            input.cols()*(rightPos[0]-rectWidth/2),
-                            input.rows()*(rightPos[1]-rectHeight/2)
+                            input.cols()*(rightPos[0]-rectWidth/2).toDouble(),
+                            input.rows()*(rightPos[1]-rectHeight/2).toDouble()
                     ),
                     Point(
-                            input.cols()*(rightPos[0]+rectWidth/2),
-                            input.rows()*(rightPos[1]+rectHeight/2)
+                            input.cols()*(rightPos[0]+rectWidth/2).toDouble(),
+                            input.rows()*(rightPos[1]+rectHeight/2).toDouble()
                     ),
                     Scalar(0.0, 255.0, 0.0),
                     3)
 
             return when (stageToRenderToViewport) {
-                is THRESHOLD -> thresholdMat
+                Stage.THRESHOLD -> thresholdMat
 
-                is Detection -> all
+                Stage.Detection -> all
 
-                is RAW_IMAGE -> input
-
-                else -> input
+                Stage.RAW_IMAGE -> input
             }
 
         }

@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode
 
 import kotlin.math.*
 
-class KRoboPoint: KPoint() {
+class KRoboPoint(xCoordinate: Double, yCoordinate: Double, angleDegrees: Double): KPoint(xCoordinate, yCoordinate, angleDegrees) {
 
     override val MINIMUM_DISTANCE_AWAY: Double= 1.0 //Minimum distance away from point to move
     private val MINIMUM_ANGLE_AWAY: Double= 1.0
@@ -15,17 +15,10 @@ class KRoboPoint: KPoint() {
             (WHEEL_DIAMETER_INCHES * Math.PI) // about 46
     private val COUNTS_PER_INCH: Double= 46.000912583980071241587049026378;
 
-    fun RoboPoint() {
-        this (0, 0, 0)
-    }
+    constructor(): this(0.0, 0.0, 0.0)
 
-    fun RoboPoint(xCoordinate: Double, yCoordinate: Double) {
-        this(xCoordinate, yCoordinate, 0)
-    }
+    constructor(xCoordinate: Double, yCoordinate: Double): this(xCoordinate, yCoordinate, 0.0)
 
-    fun RoboPoint(xCoordinate: Double, yCoordinate: Double, angleDegrees: Double) {
-        super(xCoordinate, yCoordinate, angleDegrees)
-    }
 
     fun getDistanceBetweenWheels(): Double{
         return DISTANCE_BETWEEN_WHEELS
@@ -123,7 +116,7 @@ class KRoboPoint: KPoint() {
             setAngle(getAngle() + 360)
     }
 
-    override fun toString(): Double {
+    override fun toString(): String {
         return super.toString()
     }
 }

@@ -27,7 +27,7 @@ class KRoboMovement: KOlivanieV3Hardware() {
     private var sumErrorA: Double= 0.0
     private var sumMaxD: Double= 1.0
     private var sumMaxA: Double= 1.0
-    var current: Coordinate= Coordinate(0.0, 0.0, 0.0)
+    var current: KCoordinate = KCoordinate(0.0, 0.0, 0.0)
 
     /**
      * Sets the motor powers to the correct power to go to the target position.
@@ -40,8 +40,8 @@ class KRoboMovement: KOlivanieV3Hardware() {
      * @param state The current State of the robot.
      * @return The new State of the robot.
      */
-    fun goToPosition(target: KCoordinate, maxPower: Double, distancePID: PID,
-                     anglePID: PID, distanceMin: Double, angleDegMin: Double, iState: State): State {
+    fun goToPosition(target: KCoordinate, maxPower: Double, distancePID: KPID,
+                     anglePID: KPID, distanceMin: Double, angleDegMin: Double, iState: State): State {
         // Start by setting all speeds and error values to 0 and moving into the next state
         var state = iState
         when (state) {
@@ -59,12 +59,12 @@ class KRoboMovement: KOlivanieV3Hardware() {
                 // Set the current position
                 current.setCoordinate(globalRobot.getX(), globalRobot.getY(), Math.toDegrees(globalRobot.getAngle()))
                 // Find the error in distance and angle, ensuring angle does not exceed 2*Math.PI
-                var distanceError: Double= kotlin.math.hypot(current.x - target.getX(), current.y - target.getY())
-                var angleError: Double= (target.getY() - current.angle) % (2*PI)
+                var distanceError: Double= kotlin.math.hypot(current.getX() - target.getX(), current.getY() - target.getY())
+                var angleError: Double= (target.getY() - current.getAngle()) % (2*PI)
                 if (angleError > PI)
                     angleError -= 2*PI
                 // Find the absolute angle error
-                var absAngleError: Double= atan2(target.getY() - current.y, target.getX() - current.x)
+                var absAngleError: Double= atan2(target.getY() - current.getY(), target.getX() - current.getX())
                 - current.getAngle();
                 // Convert the largest allowed error into radians to use in calculations
                 var angleMin: Double= Math.toRadians(angleDegMin)
@@ -82,7 +82,7 @@ class KRoboMovement: KOlivanieV3Hardware() {
                 dashboard.displayPrintf(5, "Target Robot X, Error X: %f, %f", target.getX(), errx)
                 dashboard.displayPrintf(6, "Target Robot Y, Error Y: %f, %f", target.getY(), erry)
                 dashboard.displayPrintf(7, "Distance Error: %f", distanceError)
-                dashboard.displayPrintf(8, "Current X,Y,A: %f, %f, %f", current.x,current.y,Math.toDegrees(current.angle))
+                dashboard.displayPrintf(8, "Current X,Y,A: %f, %f, %f", current.getX(),current.getY(),Math.toDegrees(current.getAngle()))
                 dashboard.displayPrintf(9, "angleError, target angle: %f, %f", Math.toDegrees(angleError), Math.toDegrees(target.getAngle()))
                 dashboard.displayPrintf(10, "absAngleError: %f", Math.toDegrees(absAngleError))
                 dashboard.displayPrintf(11, "Raw L, Raw C, Raw R: %d, %d, %d", rightCollector?.currentPosition, leftCollector?.currentPosition, tape?.currentPosition)
@@ -121,8 +121,8 @@ class KRoboMovement: KOlivanieV3Hardware() {
 
     fun DoGoToPosition(target: KCoordinate,
                        maxPower: Double,
-                       distancePID: PID,
-                       anglePID: PID,
+                       distancePID: KPID,
+                       anglePID: KPID,
                        distanceMin: Double,
                        angleDegMin: Double,
                        state: State,
@@ -139,13 +139,13 @@ class KRoboMovement: KOlivanieV3Hardware() {
     }
 
     fun StraightGoToPosition(target: KCoordinate, maxPower: Double, distanceMin: Double, opmodeisactive: LinearOpMode) {
-        DoGoToPosition(target, maxPower, PID(.1, 0.0, 0.0), PID(.5, 0.0, 0.0),
+        DoGoToPosition(target, maxPower, KPID(.1, 0.0, 0.0), KPID(.5, 0.0, 0.0),
                 distanceMin, 5.0, State.INIT, opmodeisactive)
     }
 
     fun TurnGoToPosition(target: KCoordinate, maxPower: Double, angleDegMin: Double, opmodeisactive: LinearOpMode) {
-        DoGoToPosition(target, maxPower, PID(0.01, 0.0, 0.0),
-                PID(.5, 0.0, 0.0), 8.0, angleDegMin, State.INIT, opmodeisactive)
+        DoGoToPosition(target, maxPower, KPID(0.01, 0.0, 0.0),
+                KPID(.5, 0.0, 0.0), 8.0, angleDegMin, State.INIT, opmodeisactive)
     }
 
 }

@@ -42,6 +42,8 @@ open class KOlivanieV3Hardware {
         val LIFTPOSITION = arrayOf(0, BLOCK1, BLOCK2, BLOCK3, BLOCK4, BLOCK5, BLOCK6, BLOCK7, BLOCK8)
     }
 
+    //    Local OpMode members
+    var hwMap:HardwareMap?= null
 
     /* Public OpMode members. */
     var leftDriveF:DcMotorEx? = null
@@ -72,21 +74,15 @@ open class KOlivanieV3Hardware {
 
     var globalRobot:KGlobalRobot = KGlobalRobot(0.0, 0.0, 180.0)
 
-    //    Local OpMode members
-    var hwMap:HardwareMap?= null
+
 
     //    Bulk data
 
-    var motor3:ExpansionHubMotor?= null
     var lOWheel:ExpansionHubMotor= hwMap!!.dcMotor.get("left collector") as ExpansionHubMotor
     var rOWheel:ExpansionHubMotor= hwMap!!.dcMotor.get("left drive b")as ExpansionHubMotor
     var cOWheel:ExpansionHubMotor= hwMap!!.dcMotor.get("tape")as ExpansionHubMotor
     var expansionHub:ExpansionHubEx= hwMap!!.get(ExpansionHubEx::class.java,"Expansion Hub 5")
     var bulkData:RevBulkData= expansionHub.getBulkInputData()
-
-    /* Constructor */
-    fun KOlivanieV3Hardware() {
-    }
 
     /* Initialize standard Hardware interfaces */
     fun init(ahwMap:HardwareMap) {

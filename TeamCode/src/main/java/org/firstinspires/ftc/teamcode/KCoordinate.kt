@@ -79,7 +79,7 @@ open class KCoordinate(xPos: Double, yPos: Double, anglePos: Double) {
      * @param coordinate Coordinate to compare
      * @return distance from current Coordinate
      */
-    fun distance(coordinate: Coordinate): Double {
+    fun distance(coordinate: KCoordinate): Double {
         return hypot(coordinate.x - x, coordinate.y - y)
     }
 
@@ -98,7 +98,7 @@ open class KCoordinate(xPos: Double, yPos: Double, anglePos: Double) {
      * @param coordinate Coordinate to compare
      * @return angle error from current Coordinate
      */
-    fun theta(coordinate: Coordinate): Double {
+    fun theta(coordinate: KCoordinate): Double {
         return wrapAngle(coordinate.angle - angle)
     }
 

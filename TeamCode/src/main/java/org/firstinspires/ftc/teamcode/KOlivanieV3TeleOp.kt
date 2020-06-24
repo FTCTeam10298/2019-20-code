@@ -47,7 +47,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * All device access is managed through the FBrian_Stormz_Hardware class.
  */
 
-@TeleOp(name="Olivanie TeleOp 3.0", group="Olivanie")
+@TeleOp(name="K Olivanie TeleOp 3.0", group="Olivanie")
 
 
 class KOlivanieV3TeleOp: OpMode() {
@@ -112,44 +112,44 @@ class KOlivanieV3TeleOp: OpMode() {
 
         // Calculate loop Period (dt).
         // Let's not repeat last year's failure/laziness that killed our performance at Regionals...
-        dt = getRuntime() - time_a;
+        dt = getRuntime() - time_a
         time_a = getRuntime()
-        telemetry.addData("Loop Time", "%f", dt);
+        telemetry.addData("Loop Time", "%f", dt)
 
 
-        telemetry.addData("Arm", "%f", arm);
-        telemetry.addData("Height", "%d", hight);
-        telemetry.addData("Capstone", capstone);
-        telemetry.addData("Tape Power", "%f", tapePower);
+        telemetry.addData("Arm", "%f", arm)
+        telemetry.addData("Height", "%d", hight)
+        telemetry.addData("Capstone", capstone)
+        telemetry.addData("Tape Power", "%f", tapePower)
 
-        robot.updatePosition();
-        telemetry.addData("Odometry L", "%d", robot.leftCollector?.getCurrentPosition());
-        telemetry.addData("Odometry R", "%d", robot.leftDriveB?.getCurrentPosition());
-        telemetry.addData("Odometry C", "%d", robot.tape?.getCurrentPosition());
-        telemetry.addData("X Position", "%f", robot.getX());
-        telemetry.addData("Y Position", "%f", robot.getY());
-        telemetry.addData("Angle", "%f", Math.toDegrees(robot.getWorldAngle_rad()));
-        telemetry.addData("Theta L", "%f", robot.deltaL);
-        telemetry.addData("Theta R", "%f", robot.deltaR);
-        telemetry.addData("Theta C", "%f", robot.deltaC);
-        telemetry.addData("Odometry R Raw", "%d", robot.tape?.getCurrentPosition());
-        telemetry.addData("Lift State", "%d", stateLift);
+        robot.updatePosition()
+        telemetry.addData("Odometry L", "%d", robot.leftCollector?.getCurrentPosition())
+        telemetry.addData("Odometry R", "%d", robot.leftDriveB?.getCurrentPosition())
+        telemetry.addData("Odometry C", "%d", robot.tape?.getCurrentPosition())
+        telemetry.addData("X Position", "%f", robot.getX())
+        telemetry.addData("Y Position", "%f", robot.getY())
+        telemetry.addData("Angle", "%f", Math.toDegrees(robot.getWorldAngle_rad()))
+        telemetry.addData("Theta L", "%f", robot.deltaL)
+        telemetry.addData("Theta R", "%f", robot.deltaR)
+        telemetry.addData("Theta C", "%f", robot.deltaC)
+        telemetry.addData("Odometry R Raw", "%d", robot.tape?.getCurrentPosition())
+        telemetry.addData("Lift State", "%d", stateLift)
 
 
         // Send telemetry message to signify robot running
-        telemetry.addData("", "\"Well Met!\"");
+        telemetry.addData("", "\"Well Met!\"")
 
         // Gamepad 1 is the driver, Gamepad 2 is the mechanisms
 
         // Drone Drive------------------------------------------------------------------------------
 
         y = if (gamepad1.left_stick_y > .1 || gamepad1.left_stick_y < -.1)
-            (-gamepad1.left_stick_y).toDouble();
+            (-gamepad1.left_stick_y).toDouble()
         else
             0.0
 
         x = if (gamepad1.left_stick_x > .1 || gamepad1.left_stick_x < -.1)
-            gamepad1.left_stick_x.toDouble();
+            gamepad1.left_stick_x.toDouble()
         else
             0.0
 
@@ -317,11 +317,11 @@ class KOlivanieV3TeleOp: OpMode() {
         }
 
         robot.lift!!.setTargetPosition(KOlivanieV3Hardware.LIFTPOSITION[stateLift]);
-        if (robot!!.lift?.getCurrentPosition()?.minus(robot!!.lift?.getTargetPosition()!!)?.let { Math.abs(it) }!! < 100)
+        if (robot.lift?.getCurrentPosition()?.minus(robot.lift?.getTargetPosition()!!)?.let { Math.abs(it) }!! < 100)
             robot.lift!!.setPower(0.0)
         else
-            robot!!.lift?.setPower(1.0)
-        telemetry.addData("Lift motor power: ", robot!!.lift?.getPower())
+            robot.lift?.setPower(1.0)
+        telemetry.addData("Lift motor power: ", robot.lift?.getPower())
 
         // End Lift---------------------------------------------------------------------------------
 

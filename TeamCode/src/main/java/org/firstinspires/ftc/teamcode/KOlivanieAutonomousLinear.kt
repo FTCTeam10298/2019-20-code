@@ -49,8 +49,9 @@ import org.openftc.easyopencv.OpenCvCameraRotation
 import org.openftc.easyopencv.OpenCvPipeline
 import java.util.ArrayList
 
-@Autonomous(name="Olivanie Autonomous Linear", group ="Olivanie")
-abstract class KOlivanieAutonomousLinear: FtcMenu.MenuButtons, LinearOpMode() {
+@Autonomous(name="K Olivanie Autonomous Linear", group ="Olivanie")
+class KOlivanieAutonomousLinear: FtcMenu.MenuButtons, LinearOpMode() {
+
     companion object {
         //0 means skystone, 1 means yellow stone
         //-1 for debug, but we can keep it like this because if it works, it should change to either 0
@@ -572,8 +573,8 @@ abstract class KOlivanieAutonomousLinear: FtcMenu.MenuButtons, LinearOpMode() {
                         robot.DoGoToPosition(
                                 target,
                                 1.0,
-                                PID(.01, 0.0, 0.0),
-                                PID(5.0, 0.0, 0.0),
+                                KPID(.01, 0.0, 0.0),
+                                KPID(5.0, 0.0, 0.0),
                                 8.0,
                                 30.0,
                                 KRoboMovement.State.INIT,
@@ -582,8 +583,8 @@ abstract class KOlivanieAutonomousLinear: FtcMenu.MenuButtons, LinearOpMode() {
                         robot.DoGoToPosition(
                                 target,
                                 1.0,
-                                PID(.01, 0.0,0.0),
-                                PID(5.0, 0.0, 0.0),
+                                KPID(.01, 0.0,0.0),
+                                KPID(5.0, 0.0, 0.0),
                                 8.0,
                                 10.0,
                                 KRoboMovement.State.INIT,

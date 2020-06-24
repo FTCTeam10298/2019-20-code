@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode
 
-class KWayPoint(xCoordinate: Double, yCoordinate: Double, angleDegree: Double, index: Double): Point() {
+class KWayPoint(xCoordinate: Double, yCoordinate: Double, angleDegree: Double, index: Double): KPoint() {
 
     // Index 3: index
     init {

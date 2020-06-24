@@ -160,7 +160,7 @@ class KOlivanieAutonomousLinear: FtcMenu.MenuButtons, LinearOpMode() {
     var stoneOrderN = arrayOf(5, 4, 3, 2, 1, 0)
 
     /* Declare OpMode members. */
-    var dashboard: HalDashboard? = null
+    var dashboard: HalDashboard = HalDashboard.createInstance(telemetry)
     var robot: KRoboMovement= KRoboMovement()
     var target: KCoordinate= KCoordinate()
 

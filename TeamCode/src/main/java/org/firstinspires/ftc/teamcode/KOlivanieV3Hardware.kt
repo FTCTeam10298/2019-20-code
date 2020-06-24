@@ -1,14 +1,7 @@
 package org.firstinspires.ftc.teamcode
 
-import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.DcMotorEx
-import com.qualcomm.robotcore.hardware.DcMotorSimple
-import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.*
-import com.qualcomm.robotcore.hardware.HardwareMap
-import com.qualcomm.robotcore.hardware.Servo
-import com.qualcomm.robotcore.hardware.Servo.Direction.*
+import com.qualcomm.robotcore.hardware.*
 import com.qualcomm.robotcore.util.Range
-
 import org.openftc.revextensions2.ExpansionHubEx
 import org.openftc.revextensions2.ExpansionHubMotor
 import org.openftc.revextensions2.RevBulkData
@@ -76,13 +69,12 @@ open class KOlivanieV3Hardware {
 
 
 
-    //    Bulk data
-
-    var lOWheel:ExpansionHubMotor= hwMap!!.dcMotor.get("left collector") as ExpansionHubMotor
-    var rOWheel:ExpansionHubMotor= hwMap!!.dcMotor.get("left drive b")as ExpansionHubMotor
-    var cOWheel:ExpansionHubMotor= hwMap!!.dcMotor.get("tape")as ExpansionHubMotor
-    var expansionHub:ExpansionHubEx= hwMap!!.get(ExpansionHubEx::class.java,"Expansion Hub 5")
-    var bulkData:RevBulkData= expansionHub.getBulkInputData()
+//    Bulk data
+    var lOWheel:ExpansionHubMotor? = null
+    var rOWheel:ExpansionHubMotor? = null
+    var cOWheel:ExpansionHubMotor? = null
+    var expansionHub:ExpansionHubEx? = null
+    var bulkData:RevBulkData?= null
 
     /* Initialize standard Hardware interfaces */
     fun init(ahwMap:HardwareMap) {
@@ -173,6 +165,12 @@ open class KOlivanieV3Hardware {
 
         // Lift uses encoder
         lift!!.setMode(DcMotor.RunMode.RUN_USING_ENCODER)
+
+        lOWheel= hwMap!!.dcMotor.get("left collector") as ExpansionHubMotor
+        rOWheel= hwMap!!.dcMotor.get("left drive b")as ExpansionHubMotor
+        cOWheel= hwMap!!.dcMotor.get("tape")as ExpansionHubMotor
+        expansionHub= hwMap!!.get(ExpansionHubEx::class.java,"Expansion Hub 5")
+        bulkData= expansionHub?.getBulkInputData()
 
         // PIDF
         //leftDriveF.setVelocityPIDFCoefficients(10, 3, 0, 0);//13.65291667);
@@ -394,8 +392,8 @@ open class KOlivanieV3Hardware {
      * odometry encoders.
      */
     fun updatePosition () {
-        var bulkData = expansionHub.getBulkInputData()
-        var currentL:Double= -bulkData.getMotorCurrentPosition(lOWheel) / 1144.0
+        var bulkData = expansionHub?.getBulkInputData()
+        var currentL:Double= -bulkData!!.getMotorCurrentPosition(lOWheel) / 1144.0
         var currentC:Double = bulkData.getMotorCurrentPosition(cOWheel) / 1144.0
         var currentR:Double = -bulkData.getMotorCurrentPosition(rOWheel) / 1144.0
         deltaL = currentL - previousL
